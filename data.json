@@ -1,0 +1,60 @@
+{
+  "hero": {
+    "name": "Pasha",
+    "xp_total": 0,
+    "money": 0,
+    "avatar_path": ""
+  },
+  "skills": [
+    {
+      "id": "english",
+      "name": "Англійська",
+      "type": "general",
+      "xp": 0,
+      "daily_done": false,
+      "tasks": []
+    },
+    {
+      "id": "french",
+      "name": "Французька",
+      "type": "general",
+      "xp": 0,
+      "daily_done": false,
+      "tasks": []
+    },
+    {
+      "id": "x_growth",
+      "name": "X (Twitter) розвиток",
+      "type": "general",
+      "xp": 0,
+      "daily_done": false,
+      "tasks": []
+    },
+    {
+      "id": "youtube",
+      "name": "YouTube канал",
+      "type": "general",
+      "xp": 0,
+      "daily_done": false,
+      "tasks": []
+    },
+    {
+      "id": "sport",
+      "name": "Спорт",
+      "type": "general",
+      "xp": 0,
+      "daily_done": false,
+      "tasks": []
+    },
+    {
+      "id": "programming",
+      "name": "Програмування",
+      "type": "general",
+      "xp": 0,
+      "daily_done": false,
+      "tasks": []
+    }
+  ],
+  "global_tasks": [],
+  "last_daily_reset": null
+}
