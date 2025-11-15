@@ -2,8 +2,11 @@
   "hero": {
     "name": "Pasha",
     "xp_total": 0,
-    "money": 0,
-    "avatar_path": ""
+    "money_usdt": 1350.0,
+    "money_uah": 11590.0,
+    "hp_current": 100,
+    "hp_max": 100,
+    "avatar_path": "avatar.jpg"
   },
   "skills": [
     {
@@ -11,8 +14,17 @@
       "name": "Англійська",
       "type": "general",
       "xp": 0,
-      "daily_done": false,
-      "tasks": []
+      "daily_done": true,
+      "tasks": [
+        {
+          "id": "task_1763211284596",
+          "name": "Подивитись урок англійської",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0
+        }
+      ]
     },
     {
       "id": "french",
@@ -56,5 +68,5 @@
     }
   ],
   "global_tasks": [],
-  "last_daily_reset": null
+  "last_daily_reset": "2025-11-15"
 }
