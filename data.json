@@ -12,28 +12,20 @@
     {
       "id": "english",
       "name": "Англійська",
-      "type": "general",
-      "xp": 50,
-      "daily_done": true,
-      "tasks": [
-        {
-          "id": "task_1763211284596",
-          "name": "Подивитись урок англійської",
-          "category": "short",
-          "xp_reward": 50,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
-          "completed": true
-        }
-      ]
+      "type": "language",
+      "xp": 0,
+      "daily_done": false,
+      "tasks": [],
+      "cefr": "A0"
     },
     {
       "id": "french",
       "name": "Французька",
-      "type": "general",
+      "type": "language",
       "xp": 0,
       "daily_done": false,
-      "tasks": []
+      "tasks": [],
+      "cefr": "A0"
     },
     {
       "id": "x_growth",
@@ -41,7 +33,8 @@
       "type": "general",
       "xp": 0,
       "daily_done": false,
-      "tasks": []
+      "tasks": [],
+      "cefr": ""
     },
     {
       "id": "youtube",
@@ -49,7 +42,8 @@
       "type": "general",
       "xp": 0,
       "daily_done": false,
-      "tasks": []
+      "tasks": [],
+      "cefr": ""
     },
     {
       "id": "sport",
@@ -57,7 +51,8 @@
       "type": "general",
       "xp": 0,
       "daily_done": false,
-      "tasks": []
+      "tasks": [],
+      "cefr": ""
     },
     {
       "id": "programming",
@@ -65,7 +60,8 @@
       "type": "general",
       "xp": 0,
       "daily_done": false,
-      "tasks": []
+      "tasks": [],
+      "cefr": ""
     }
   ],
   "global_tasks": [],

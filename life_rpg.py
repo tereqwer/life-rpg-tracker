@@ -51,6 +51,22 @@ def title_for_level(level: int) -> str:
         return "Грандмайстер"
     return "Легенда"
 
+def color_for_level(level: int) -> str:
+    """Повертає колір тексту для рівня."""
+    if level <= 0:
+        return "#9ca3af"  # сірий
+    if level <= 5:
+        return "#22c55e"  # зелений
+    if level <= 10:
+        return "#3b82f6"  # синій
+    if level <= 15:
+        return "#a855f7"  # фіолетовий
+    if level <= 20:
+        return "#eab308"  # жовто-золотий
+    if level <= 30:
+        return "#f97316"  # помаранчевий
+    return "#ef4444"      # червоний для легенд
+
 def level_to_xp(level: int) -> float:
     """Скільки XP треба для певного рівня (сукупний поріг)."""
     if level <= 0:
@@ -84,8 +100,10 @@ def create_default_data() -> dict:
         # для англійської та французької робимо тип "language"
         if s["id"] in ("english", "french"):
             skill_type = "language"
+            cefr_value = "A0"
         else:
             skill_type = "general"
+            cefr_value = ""
 
         skills.append({
             "id": s["id"],
@@ -93,7 +111,8 @@ def create_default_data() -> dict:
             "type": skill_type,
             "xp": 0,
             "daily_done": False,
-            "tasks": []
+            "tasks": [],
+            "cefr": cefr_value   
         })
 
 
@@ -135,7 +154,16 @@ def load_data() -> dict:
         data = create_default_data()
         save_data(data)
 
+    # ---- ДОБАВЛЯЄМО CEFР, ЯКЩО НЕМА ----
+    for skill in data.get("skills", []):
+        if "cefr" not in skill:
+            if skill.get("type") == "language":
+                skill["cefr"] = "A0"
+            else:
+                skill["cefr"] = ""
+    save_data(data)
     return data
+
 
 
 def save_data(data: dict) -> None:
@@ -183,7 +211,35 @@ class App:
         """Рахуємо загальний рівень героя з total_xp."""
         total_xp = self.get_total_xp()
         return xp_to_level(total_xp)
+    
+    def on_level_up(self, skill: dict, old_lvl: int, new_lvl: int):
+        """Попап + звук при переході на новий рівень."""
+        skill_name = skill.get("name", "Навичка")
 
+        messagebox.showinfo(
+            "Новий рівень!",
+            f"Ви отримали новий рівень у '{skill_name}'!\n"
+            f"{old_lvl} ➜ {new_lvl}"
+        )
+
+    def update_cefr_for_skill(self, skill: dict):
+        """Оновлює CEFR для мовної навички з комбобокса."""
+        if not hasattr(self, "cefr_var"):
+            return
+        new_cefr = self.cefr_var.get()
+        skill["cefr"] = new_cefr
+        save_data(self.data)
+        messagebox.showinfo("CEFR оновлено", f"Новий рівень CEFR: {new_cefr}")
+        # можна оновити тільки екран навички, але простіше:
+        self.build_skill_screen(skill["id"])
+
+
+        # ефект звуку (опційно)
+        try:
+            import winsound
+            winsound.PlaySound("lvlup.mp3", winsound.SND_FILENAME | winsound.SND_ASYNC)
+        except:
+            pass
 
     # ---------- UI: головний екран ----------
     def ensure_daily_reset(self):
@@ -265,11 +321,26 @@ class App:
             font=("Segoe UI", 12)
         ).pack(anchor="w", padx=10, pady=(5, 0))
 
-        ctk.CTkLabel(
+        self.money_usdt_var = ctk.StringVar(value=f"{money_usdt:.2f}")
+        self.money_uah_var = ctk.StringVar(value=f"{money_uah:.2f}")
+
+        money_frame = ctk.CTkFrame(right_frame, fg_color="transparent")
+        money_frame.pack(anchor="w", padx=10, pady=(5, 5))
+
+        ctk.CTkLabel(money_frame, text="USDT:", font=("Segoe UI", 11)).grid(row=0, column=0, sticky="w")
+        entry_usdt = ctk.CTkEntry(money_frame, width=90, textvariable=self.money_usdt_var)
+        entry_usdt.grid(row=0, column=1, padx=(4, 10), pady=(0, 2))
+
+        ctk.CTkLabel(money_frame, text="UAH:", font=("Segoe UI", 11)).grid(row=1, column=0, sticky="w")
+        entry_uah = ctk.CTkEntry(money_frame, width=90, textvariable=self.money_uah_var)
+        entry_uah.grid(row=1, column=1, padx=(4, 10), pady=(0, 2))
+
+        ctk.CTkButton(
             right_frame,
-            text=f"USDT: {money_usdt:.2f}\nUAH: {money_uah:.2f}",
-            font=("Segoe UI", 12)
-        ).pack(anchor="w", padx=10, pady=(5, 10))
+            text="Оновити баланс",
+            width=140,
+            command=self.update_money_from_inputs
+        ).pack(anchor="w", padx=10, pady=(0, 12))
 
         ctk.CTkButton(
             right_frame,
@@ -351,15 +422,47 @@ class App:
         )
         lbl_lvl.pack(anchor="w", padx=10, pady=(8, 0))
 
+        lvl_color = color_for_level(lvl)
+        ctk.CTkLabel(
+            stats_frame,
+            text=title.upper(),
+            font=("Segoe UI", 15, "bold"),
+            text_color=lvl_color
+        ).pack(anchor="w", padx=10, pady=(0, 4))
+
+
         # CEFR для мов
-        if skill.get("type") == "language":
-            cefr = cefr_from_level(lvl)
-            lbl_cefr = ctk.CTkLabel(
-                stats_frame,
-                text=f"CEFR: {cefr}",
+        is_language = skill.get("type") == "language"
+
+        if is_language:
+            # поточний CEFR з data.json
+            current_cefr = skill.get("cefr", "A0")
+
+            cefr_row = ctk.CTkFrame(stats_frame, fg_color="transparent")
+            cefr_row.pack(anchor="w", padx=10, pady=(4, 4))
+
+            ctk.CTkLabel(
+                cefr_row,
+                text=f"CEFR:",
                 font=("Segoe UI", 12)
+            ).pack(side="left")
+
+            self.cefr_var = ctk.StringVar(value=current_cefr)
+            cefr_combo = ctk.CTkComboBox(
+                cefr_row,
+                variable=self.cefr_var,
+                values=["A0", "A1", "A2", "B1", "B2", "C1", "C2"],
+                width=80
             )
-            lbl_cefr.pack(anchor="w", padx=10)
+            cefr_combo.pack(side="left", padx=(6, 6))
+
+            ctk.CTkButton(
+                cefr_row,
+                text="Оновити",
+                width=80,
+                command=lambda s=skill: self.update_cefr_for_skill(s)
+            ).pack(side="left")
+
 
         # прогрес-бар
         progressbar = ctk.CTkProgressBar(stats_frame, height=14)
@@ -491,43 +594,58 @@ class App:
 
 
     def execute_task(self, skill_id: str, task_id: str):
-        """Виконання задачі: додаємо XP, гроші, daily_done."""
-
-        skill = next((s for s in self.data.get("skills", []) if s.get("id") == skill_id), None)
+        """Виконати задачу — додати XP, гроші, позначити completed."""
+        # знаходимо навичку
+        skill = next((s for s in self.data.get("skills", []) if s["id"] == skill_id), None)
         if not skill:
-            messagebox.showerror("Помилка", "Скіл не знайдено")
             return
 
-        tasks = skill.get("tasks", [])
-        task = next((t for t in tasks if t.get("id") == task_id), None)
+        # знаходимо задачу
+        task = next((t for t in skill.get("tasks", []) if t["id"] == task_id), None)
         if not task:
-            messagebox.showerror("Помилка", "Задачу не знайдено")
+            return
+
+        # якщо вже виконана — ігноруємо
+        if task.get("completed"):
             return
 
         xp_reward = task.get("xp_reward", 0)
-        money_usdt = task.get("money_usdt", 0)
-        money_uah = task.get("money_uah", 0)
-        if task.get("completed"):
-            messagebox.showinfo("Вже виконано", "Цю задачу ти вже виконав сьогодні.")
-            return
-        # додаємо XP навичці
-        skill["xp"] = skill.get("xp", 0) + xp_reward
+        money_usdt = task.get("money_usdt", 0.0)
+        money_uah = task.get("money_uah", 0.0)
 
-        # додаємо гроші герою
+        # -----------------------------
+        # XP + LEVEL UP LOGIC
+        # -----------------------------
+        old_xp = skill.get("xp", 0)
+        old_lvl = xp_to_level(old_xp)
+
+        new_xp = old_xp + xp_reward
+        skill["xp"] = new_xp
+
+        new_lvl = xp_to_level(new_xp)
+
+        # Якщо отримали новий рівень → викликаємо анімацію/звук/попап
+        if new_lvl > old_lvl:
+            self.on_level_up(skill, old_lvl, new_lvl)
+
+        # -----------------------------
+        # Гроші
+        # -----------------------------
         hero = self.data.get("hero", {})
         hero["money_usdt"] = hero.get("money_usdt", 0.0) + money_usdt
         hero["money_uah"] = hero.get("money_uah", 0.0) + money_uah
 
-        # відмічаємо як виконану
+        # -----------------------------
+        # Позначаємо задачу як виконану
+        # -----------------------------
         task["completed"] = True
-
-        # daily_done
         skill["daily_done"] = True
 
         save_data(self.data)
 
-        # оновлюємо екран навички (щоб прогрес змінився)
-        self.build_skill_screen(skill_id)
+        # Перебудовуємо екран
+        self.build_main_screen()
+
 
     def open_add_task_dialog(self, skill_id: str):
         """Невелике вікно для створення нової задачі (CustomTkinter)."""
@@ -645,27 +763,56 @@ class App:
         top_row = ctk.CTkFrame(frame, fg_color="transparent")
         top_row.pack(fill="x", pady=(5, 0))
 
+        # назва навички
         ctk.CTkLabel(
             top_row,
             text=name,
-            font=("Segoe UI", 13, "bold")
+            font=("Segoe UI", 15, "bold")
         ).pack(side="left", anchor="w")
 
-        ctk.CTkLabel(
+        # великий рівень справа з кольором
+        lvl_color = color_for_level(lvl)
+        lvl_label = ctk.CTkLabel(
             top_row,
-            text=f"lvl {lvl} ({title}) | XP: {int(xp)}",
-            font=("Segoe UI", 11)
-        ).pack(side="right", anchor="e")
+            text=f"lvl {lvl}",
+            font=("Segoe UI", 16, "bold"),
+            text_color=lvl_color
+        )
+        lvl_label.pack(side="right", anchor="e")
+
+        # великий статус під назвою
+        ctk.CTkLabel(
+            frame,
+            text=title.upper(),          # НОВАЧОК / МАЙСТЕР / ЛЕГЕНДА
+            font=("Segoe UI", 13, "bold"),
+            text_color=lvl_color
+        ).pack(anchor="w", padx=5, pady=(0, 2))
 
         bar = ctk.CTkProgressBar(frame)
         bar.pack(fill="x", padx=5, pady=(5, 0))
         bar.set(progress)
 
+  # --- XP + титул + CEFR (ручний) ---
+        subtitle_parts = [f"XP: {int(xp)}", title]
+
+        if skill.get("type") == "language":
+            cefr = skill.get("cefr", "A0")
+            subtitle_parts.append(f"CEFR: {cefr}")
+
+        subtitle_text = " | ".join(subtitle_parts)
+
         ctk.CTkLabel(
             frame,
-            text=f"{int(progress * 100)}% до наступного рівня",
-            font=("Segoe UI", 10)
+            text=subtitle_text,
+            font=("Segoe UI", 11)
         ).pack(anchor="w", padx=5, pady=(2, 0))
+
+        ctk.CTkLabel(
+            frame,
+            text=subtitle_text,
+            font=("Segoe UI", 11)
+        ).pack(anchor="w", padx=5, pady=(2, 0))
+
 
         bottom_row = ctk.CTkFrame(frame, fg_color="transparent")
         bottom_row.pack(fill="x", pady=(4, 5))
@@ -699,6 +846,25 @@ class App:
         """Обробка натискання кнопки збереження."""
         save_data(self.data)
         messagebox.showinfo("Збережено", "Стан успішно збережено у data.json")
+
+    def update_money_from_inputs(self):
+        """Бере значення з полів вводу і зберігає в hero.money_*."""
+        hero = self.data.get("hero", {})
+
+        try:
+            hero["money_usdt"] = float(self.money_usdt_var.get())
+        except Exception:
+            hero["money_usdt"] = hero.get("money_usdt", 0.0)
+
+        try:
+            hero["money_uah"] = float(self.money_uah_var.get())
+        except Exception:
+            hero["money_uah"] = hero.get("money_uah", 0.0)
+
+        save_data(self.data)
+        # перезбираємо головний екран, щоб все оновилось
+        self.build_main_screen()
+
 
     def open_skill(self, skill_id: str):
         """Переходимо на екран конкретної навички."""
