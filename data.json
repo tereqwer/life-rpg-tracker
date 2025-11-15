@@ -13,7 +13,7 @@
       "id": "english",
       "name": "Англійська",
       "type": "general",
-      "xp": 0,
+      "xp": 50,
       "daily_done": true,
       "tasks": [
         {
@@ -22,7 +22,8 @@
           "category": "short",
           "xp_reward": 50,
           "money_usdt": 0.0,
-          "money_uah": 0.0
+          "money_uah": 0.0,
+          "completed": true
         }
       ]
     },

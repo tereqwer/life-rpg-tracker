@@ -1,8 +1,8 @@
 import json
 import os
 import math
-import tkinter as tk
-from tkinter import ttk, messagebox
+import customtkinter as ctk
+from tkinter import messagebox
 from PIL import Image, ImageTk
 from datetime import date
 import time
@@ -147,17 +147,22 @@ def save_data(data: dict) -> None:
 # ---------- Клас застосунку ----------
 
 class App:
-    def __init__(self, root: tk.Tk):
+    def __init__(self, root: ctk.CTk):
         self.hero_image = None  # щоб картинку не зʼїв GC
+        self.font_task = tkfont.Font(family="Segoe UI", size=9)
+        self.font_task_completed = tkfont.Font(family="Segoe UI", size=9, overstrike=1)
         self.root = root
-        self.root.title("RPGLife: Hero’s Journey")
         self.root.geometry("900x550")
-        self.root.configure(bg="#050816")  # темний фон
+
+        self.hero_image = None
+
+        self.data = load_data()
+        self.ensure_daily_reset()
+
+        self.build_main_screen()
+
 
         self.hero_image = None  # для аватарки
-
-        # стилі
-        self.setup_styles()
 
         # Завантажуємо дані
         self.data = load_data()
@@ -179,86 +184,6 @@ class App:
         total_xp = self.get_total_xp()
         return xp_to_level(total_xp)
 
-    def setup_styles(self):
-            style = ttk.Style()
-            # тема, яка дозволяє кастомізувати кольори
-            try:
-                style.theme_use("clam")
-            except Exception:
-                pass
-
-            # Головний фон
-            style.configure(
-                "Main.TFrame",
-                background="#050816"
-            )
-
-            # Карти (скіли, герой)
-            style.configure(
-                "Card.TFrame",
-                background="#0b1220",
-                relief="flat",
-                borderwidth=0
-            )
-
-            style.configure(
-                "Hero.TFrame",
-                background="#020617",
-                relief="flat",
-                borderwidth=0
-            )
-
-            # Тексти
-            style.configure(
-                "Title.TLabel",
-                background="#050816",
-                foreground="#e5e7eb",
-                font=("Segoe UI", 12, "bold")
-            )
-
-            style.configure(
-                "SkillName.TLabel",
-                background="#0b1220",
-                foreground="#e5e7eb",
-                font=("Segoe UI", 10, "bold")
-            )
-
-            style.configure(
-                "Stat.TLabel",
-                background="#0b1220",
-                foreground="#9ca3af",
-                font=("Segoe UI", 9)
-            )
-
-            style.configure(
-                "HeroStat.TLabel",
-                background="#020617",
-                foreground="#e5e7eb",
-                font=("Segoe UI", 9)
-            )
-
-            # Кнопки
-            style.configure(
-                "RPG.TButton",
-                background="#1d283a",
-                foreground="#e5e7eb",
-                font=("Segoe UI", 9, "bold"),
-                padding=4
-            )
-            style.map(
-                "RPG.TButton",
-                background=[("active", "#111827")]
-            )
-
-            # Прогрес-бар XP
-            style.configure(
-                "XP.Horizontal.TProgressbar",
-                troughcolor="#020617",
-                bordercolor="#020617",
-                background="#22c55e",
-                lightcolor="#4ade80",
-                darkcolor="#16a34a"
-            )
 
     # ---------- UI: головний екран ----------
     def ensure_daily_reset(self):
@@ -267,145 +192,106 @@ class App:
             last = self.data.get("last_daily_reset")
 
             if last != today:
-                # новий день — скидаємо daily_done
+            # новий день — скидаємо daily_done і очищаємо виконані задачі
                 for skill in self.data.get("skills", []):
                     skill["daily_done"] = False
+                    tasks = skill.get("tasks", [])
+                    # залишаємо тільки невиконані
+                    skill["tasks"] = [t for t in tasks if not t.get("completed")]
                 self.data["last_daily_reset"] = today
                 save_data(self.data)
 
 
 
     def build_main_screen(self):
-        """Головний екран: зліва навички, справа герой."""
+        """Головний екран: зліва навички, справа герой (CustomTkinter)."""
 
-        # Очистити вікно
-        for widget in self.root.winfo_children():
-            widget.destroy()
+        # очистка
+        for w in self.root.winfo_children():
+            w.destroy()
 
-        # Головний контейнер: ліво/право
-        main_frame = ttk.Frame(self.root, padding=16, style="Main.TFrame")
-        main_frame.pack(fill="both", expand=True)
+        # головний контейнер
+        main_frame = ctk.CTkFrame(self.root, corner_radius=0)
+        main_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Ліво — навички
-        left_frame = ttk.Frame(main_frame, style="Main.TFrame")
-        left_frame.pack(side="left", fill="both", expand=True, padx=(0, 12))
+        # ліво/право
+        left_frame = ctk.CTkFrame(main_frame)
+        left_frame.pack(side="left", fill="both", expand=True, padx=(0, 10))
 
-        # Право — герой (панель)
-        right_frame_outer = ttk.Frame(main_frame, style="Main.TFrame")
-        right_frame_outer.pack(side="right", fill="y")
+        right_frame = ctk.CTkFrame(main_frame, width=260)
+        right_frame.pack(side="right", fill="y")
 
-        hero_frame = ttk.Frame(right_frame_outer, padding=12, style="Hero.TFrame")
-        hero_frame.pack(fill="y")
-
-        # --------- ПАНЕЛЬ ГЕРОЯ (СПРАВА) ---------
+        # ---------- ПАНЕЛЬ ГЕРОЯ ----------
         hero = self.data.get("hero", {})
         hero_name = hero.get("name", "Hero")
-
         total_xp = self.get_total_xp()
-        total_level = self.get_total_level()
-
-        money_usdt = hero.get("money_usdt", hero.get("money", 0.0))
+        total_lvl = self.get_total_level()
+        money_usdt = hero.get("money_usdt", 0.0)
         money_uah = hero.get("money_uah", 0.0)
-
         hp_current = hero.get("hp_current", 100)
         hp_max = hero.get("hp_max", 100)
 
-        lbl_hero_title = ttk.Label(
-            hero_frame,
-            text="Герой",
-            style="Title.TLabel"
-        )
-        lbl_hero_title.pack(pady=(0, 8), anchor="center")
+        title_lbl = ctk.CTkLabel(right_frame, text="Герой", font=("Segoe UI", 18, "bold"))
+        title_lbl.pack(pady=(10, 5))
 
-        # Аватар
+        # аватар
         avatar_path = hero.get("avatar_path") or ""
         if avatar_path and os.path.exists(avatar_path):
             try:
-                img = Image.open(avatar_path)
-                img = img.resize((180, 180))
+                img = Image.open(avatar_path).resize((180, 180))
                 self.hero_image = ImageTk.PhotoImage(img)
-                avatar_box = tk.Label(
-                    hero_frame,
-                    image=self.hero_image,
-                    bg="#020617"
-                )
-                avatar_box.pack(pady=(0, 8))
+                avatar_lbl = ctk.CTkLabel(right_frame, image=self.hero_image, text="")
             except Exception:
-                avatar_box = tk.Label(
-                    hero_frame,
-                    text="[ 3D моделька героя ]",
-                    width=22,
-                    height=10,
-                    bg="#111827",
-                    fg="#9ca3af"
-                )
-                avatar_box.pack(pady=(0, 8))
+                avatar_lbl = ctk.CTkLabel(right_frame, text="[ avatar ]")
         else:
-            avatar_box = tk.Label(
-                hero_frame,
-                text="[ 3D моделька героя ]",
-                width=22,
-                height=10,
-                bg="#111827",
-                fg="#9ca3af"
-            )
-            avatar_box.pack(pady=(0, 8))
+            avatar_lbl = ctk.CTkLabel(right_frame, text="[ 3D моделька героя ]")
+        avatar_lbl.pack(pady=(0, 10))
 
-        # Стати героя
-        lbl_name = ttk.Label(
-            hero_frame,
+        ctk.CTkLabel(
+            right_frame,
             text=f"{hero_name}",
-            style="HeroStat.TLabel",
-            font=("Segoe UI", 11, "bold")
-        )
-        lbl_name.pack(anchor="w")
+            font=("Segoe UI", 14, "bold")
+        ).pack(anchor="w", padx=10)
 
-        lbl_level = ttk.Label(
-            hero_frame,
-            text=f"Рівень: {total_level}   XP: {int(total_xp)}",
-            style="HeroStat.TLabel"
-        )
-        lbl_level.pack(anchor="w")
+        ctk.CTkLabel(
+            right_frame,
+            text=f"Рівень: {total_lvl} | XP: {int(total_xp)}",
+            font=("Segoe UI", 12)
+        ).pack(anchor="w", padx=10)
 
-        lbl_hp = ttk.Label(
-            hero_frame,
+        ctk.CTkLabel(
+            right_frame,
             text=f"HP: {hp_current}/{hp_max}",
-            style="HeroStat.TLabel"
-        )
-        lbl_hp.pack(anchor="w", pady=(4, 0))
+            font=("Segoe UI", 12)
+        ).pack(anchor="w", padx=10, pady=(5, 0))
 
-        lbl_money = ttk.Label(
-            hero_frame,
+        ctk.CTkLabel(
+            right_frame,
             text=f"USDT: {money_usdt:.2f}\nUAH: {money_uah:.2f}",
-            style="HeroStat.TLabel"
-        )
-        lbl_money.pack(anchor="w", pady=(4, 0))
+            font=("Segoe UI", 12)
+        ).pack(anchor="w", padx=10, pady=(5, 10))
 
-        btn_save = ttk.Button(hero_frame, text="Зберегти стан", style="RPG.TButton", command=self.handle_save)
-        btn_save.pack(pady=(12, 0), anchor="center")
+        ctk.CTkButton(
+            right_frame,
+            text="Зберегти стан",
+            command=self.handle_save
+        ).pack(pady=(0, 15))
 
-        # --------- ЛІВО — СПИСОК НАВИЧОК ---------
-        lbl_skills_title = ttk.Label(left_frame, text="Мої навички", style="Title.TLabel")
-        lbl_skills_title.pack(anchor="w", pady=(0, 8))
+        # ---------- ЛІВО: СПИСОК НАВИЧОК ----------
+        ctk.CTkLabel(
+            left_frame,
+            text="Мої навички",
+            font=("Segoe UI", 18, "bold")
+        ).pack(anchor="w", pady=(10, 5), padx=5)
 
-        # фрейм зі скролом
-        canvas = tk.Canvas(left_frame, borderwidth=0, highlightthickness=0, bg="#050816")
-        inner_frame = ttk.Frame(canvas, style="Main.TFrame")
-        scrollbar = ttk.Scrollbar(left_frame, orient="vertical", command=canvas.yview)
-        canvas.configure(yscrollcommand=scrollbar.set)
-
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-
-        canvas.create_window((0, 0), window=inner_frame, anchor="nw")
-
-        def on_frame_configure(event):
-            canvas.configure(scrollregion=canvas.bbox("all"))
-
-        inner_frame.bind("<Configure>", on_frame_configure)
+        scroll = ctk.CTkScrollableFrame(left_frame)
+        scroll.pack(fill="both", expand=True, pady=(0, 5))
 
         for skill in self.data.get("skills", []):
-            self._create_skill_card(inner_frame, skill)
+            self._create_skill_card(scroll, skill)
+
+
+
 
     def build_skill_screen(self, skill_id: str):
         """Екран конкретної навички: стати + задачі."""
@@ -431,95 +317,89 @@ class App:
             progress = (xp - current_level_xp) / (next_level_xp - current_level_xp)
             progress = max(0.0, min(1.0, progress))
 
-        # головний фрейм
-        main_frame = ttk.Frame(self.root, padding=16, style="Main.TFrame")
-        main_frame.pack(fill="both", expand=True)
+               # головний фрейм
+        main_frame = ctk.CTkFrame(self.root, corner_radius=0)
+        main_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
         # верхній рядок: Назад + назва навички
-        top_row = ttk.Frame(main_frame, style="Main.TFrame")
+        top_row = ctk.CTkFrame(main_frame, fg_color="transparent")
         top_row.pack(fill="x")
 
-        btn_back = ttk.Button(top_row, text="← Назад", style="RPG.TButton", command=self.build_main_screen)
-        btn_back.pack(side="left")
+        btn_back = ctk.CTkButton(
+            top_row,
+            text="← Назад",
+            width=90,
+            command=self.build_main_screen
+        )
+        btn_back.pack(side="left", padx=(0, 10), pady=5)
 
-        lbl_title = ttk.Label(
+        lbl_title = ctk.CTkLabel(
             top_row,
             text=f"Навичка: {name}",
-            style="Title.TLabel"
+            font=("Segoe UI", 18, "bold")
         )
-        lbl_title.pack(side="left", padx=12)
+        lbl_title.pack(side="left", padx=12, pady=5)
 
         # блок статів навички
-        stats_frame = ttk.Frame(main_frame, padding=12, style="Card.TFrame")
-        stats_frame.pack(fill="x", pady=(12, 8))
+        stats_frame = ctk.CTkFrame(main_frame, corner_radius=10)
+        stats_frame.pack(fill="x", pady=(12, 8), padx=5)
 
-        lbl_lvl = ttk.Label(
+        lbl_lvl = ctk.CTkLabel(
             stats_frame,
             text=f"Рівень: {lvl} ({title})   XP: {int(xp)}",
-            style="HeroStat.TLabel"
+            font=("Segoe UI", 14)
         )
-        lbl_lvl.pack(anchor="w")
+        lbl_lvl.pack(anchor="w", padx=10, pady=(8, 0))
 
         # CEFR для мов
         if skill.get("type") == "language":
             cefr = cefr_from_level(lvl)
-            lbl_cefr = ttk.Label(
+            lbl_cefr = ctk.CTkLabel(
                 stats_frame,
                 text=f"CEFR: {cefr}",
-                style="HeroStat.TLabel"
+                font=("Segoe UI", 12)
             )
-            lbl_cefr.pack(anchor="w")
+            lbl_cefr.pack(anchor="w", padx=10)
 
         # прогрес-бар
-        progressbar = ttk.Progressbar(
-            stats_frame,
-            orient="horizontal",
-            mode="determinate",
-            style="XP.Horizontal.TProgressbar"
-        )
-        progressbar.pack(fill="x", pady=(6, 0))
-        progressbar["maximum"] = 100
-        progressbar["value"] = int(progress * 100)
+        progressbar = ctk.CTkProgressBar(stats_frame, height=14)
+        progressbar.pack(fill="x", padx=10, pady=(8, 0))
+        progressbar.set(progress)   # progress у тебе вже порахований 0..1
 
-        lbl_progress = ttk.Label(
+        lbl_progress = ctk.CTkLabel(
             stats_frame,
             text=f"{int(progress * 100)}% до наступного рівня",
-            style="HeroStat.TLabel"
+            font=("Segoe UI", 11)
         )
-        lbl_progress.pack(anchor="w", pady=(2, 0))
+        lbl_progress.pack(anchor="w", padx=10, pady=(4, 8))
 
-        # --------- блок задач ---------
-        tasks_header = ttk.Frame(main_frame, style="Main.TFrame")
-        tasks_header.pack(fill="x", pady=(12, 4))
 
-        lbl_tasks = ttk.Label(tasks_header, text="Задачі", style="Title.TLabel")
+         # --------- блок задач ---------
+        tasks_header = ctk.CTkFrame(main_frame, fg_color="transparent")
+        tasks_header.pack(fill="x", pady=(12, 4), padx=5)
+
+        lbl_tasks = ctk.CTkLabel(
+            tasks_header,
+            text="Задачі",
+            font=("Segoe UI", 18, "bold")
+        )
         lbl_tasks.pack(side="left")
 
-        btn_add_task = ttk.Button(
+        btn_add_task = ctk.CTkButton(
             tasks_header,
             text="+ Додати задачу",
-            style="RPG.TButton",
+            width=140,
             command=lambda s_id=skill_id: self.open_add_task_dialog(s_id)
         )
         btn_add_task.pack(side="right")
 
-        # скрол для задач
-        tasks_outer = ttk.Frame(main_frame, style="Main.TFrame")
-        tasks_outer.pack(fill="both", expand=True)
+        # блок задач (скрол)
+        tasks_outer = ctk.CTkFrame(main_frame, corner_radius=10)
+        tasks_outer.pack(fill="both", expand=True, padx=5, pady=(0, 10))
 
-        canvas = tk.Canvas(tasks_outer, borderwidth=0, highlightthickness=0, bg="#050816")
-        inner_frame = ttk.Frame(canvas, style="Main.TFrame")
-        scrollbar = ttk.Scrollbar(tasks_outer, orient="vertical", command=canvas.yview)
-        canvas.configure(yscrollcommand=scrollbar.set)
+        tasks_scroll = ctk.CTkScrollableFrame(tasks_outer)
+        tasks_scroll.pack(fill="both", expand=True, padx=5, pady=5)
 
-        canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-        canvas.create_window((0, 0), window=inner_frame, anchor="nw")
-
-        def on_frame_configure(event):
-            canvas.configure(scrollregion=canvas.bbox("all"))
-
-        inner_frame.bind("<Configure>", on_frame_configure)
 
         # категорії
         categories = [
@@ -534,56 +414,85 @@ class App:
         for cat_key, cat_label in categories:
             cat_tasks = [t for t in tasks if t.get("category") == cat_key]
 
-            cat_frame = ttk.Frame(inner_frame, padding=8, style="Main.TFrame")
-            cat_frame.pack(fill="x", pady=(4, 8))
+            # рамка категорії
+            cat_frame = ctk.CTkFrame(tasks_scroll)
+            cat_frame.pack(fill="x", pady=(4, 8), padx=5)
 
-            lbl_cat = ttk.Label(cat_frame, text=cat_label, style="SkillName.TLabel")
-            lbl_cat.pack(anchor="w")
+            lbl_cat = ctk.CTkLabel(
+                cat_frame,
+                text=cat_label,
+                font=("Segoe UI", 13, "bold")
+            )
+            lbl_cat.pack(anchor="w", padx=8, pady=(4, 2))
 
             if not cat_tasks:
-                lbl_empty = ttk.Label(
+                ctk.CTkLabel(
                     cat_frame,
                     text="Поки немає задач у цій категорії",
-                    style="Stat.TLabel"
-                )
-                lbl_empty.pack(anchor="w", padx=8, pady=(2, 0))
+                    font=("Segoe UI", 11)
+                ).pack(anchor="w", padx=16, pady=(0, 4))
             else:
                 for task in cat_tasks:
                     self._create_task_row(cat_frame, skill_id, task)
 
+
     def _create_task_row(self, parent, skill_id: str, task: dict):
-        """Одна задача з кнопкою 'Виконати'."""
-        row = ttk.Frame(parent, padding=6, style="Card.TFrame")
-        row.pack(fill="x", padx=8, pady=3)
+        """Одна задача з кнопкою 'Виконати' (CustomTkinter)."""
+        row = ctk.CTkFrame(parent)
+        row.pack(fill="x", padx=10, pady=4)
 
         name = task.get("name", "Без назви")
         xp_reward = task.get("xp_reward", 0)
         money_usdt = task.get("money_usdt", 0)
         money_uah = task.get("money_uah", 0)
+        completed = task.get("completed", False)
 
-        left = ttk.Frame(row, style="Card.TFrame")
+        # ліва частина — текст
+        left = ctk.CTkFrame(row, fg_color="transparent")
         left.pack(side="left", fill="x", expand=True)
 
-        lbl_name = ttk.Label(left, text=name, style="SkillName.TLabel")
+        # стилі для виконаних / невиконаних
+        if completed:
+            prefix = "✅ "
+            name_color = "#9ca3af"
+            reward_color = "#6b7280"
+        else:
+            prefix = "• "
+            name_color = "#e5e7eb"
+            reward_color = "#9ca3af"
+
+        lbl_name = ctk.CTkLabel(
+            left,
+            text=prefix + name,
+            font=("Segoe UI", 12),
+            text_color=name_color
+        )
         lbl_name.pack(anchor="w")
 
-        lbl_rewards = ttk.Label(
+        lbl_rewards = ctk.CTkLabel(
             left,
             text=f"+{xp_reward} XP  |  +{money_usdt} USDT  |  +{money_uah} UAH",
-            style="Stat.TLabel"
+            font=("Segoe UI", 10),
+            text_color=reward_color
         )
-        lbl_rewards.pack(anchor="w")
+        lbl_rewards.pack(anchor="w", pady=(2, 0))
 
-        btn_do = ttk.Button(
+        # права частина — кнопка
+        btn_do = ctk.CTkButton(
             row,
             text="Виконати",
-            style="RPG.TButton",
+            width=100,
             command=lambda s_id=skill_id, t_id=task.get("id"): self.execute_task(s_id, t_id)
         )
-        btn_do.pack(side="right")
+        btn_do.pack(side="right", padx=5)
+
+        if completed:
+            btn_do.configure(state="disabled")
+
 
     def execute_task(self, skill_id: str, task_id: str):
         """Виконання задачі: додаємо XP, гроші, daily_done."""
+
         skill = next((s for s in self.data.get("skills", []) if s.get("id") == skill_id), None)
         if not skill:
             messagebox.showerror("Помилка", "Скіл не знайдено")
@@ -598,7 +507,9 @@ class App:
         xp_reward = task.get("xp_reward", 0)
         money_usdt = task.get("money_usdt", 0)
         money_uah = task.get("money_uah", 0)
-
+        if task.get("completed"):
+            messagebox.showinfo("Вже виконано", "Цю задачу ти вже виконав сьогодні.")
+            return
         # додаємо XP навичці
         skill["xp"] = skill.get("xp", 0) + xp_reward
 
@@ -606,6 +517,9 @@ class App:
         hero = self.data.get("hero", {})
         hero["money_usdt"] = hero.get("money_usdt", 0.0) + money_usdt
         hero["money_uah"] = hero.get("money_uah", 0.0) + money_uah
+
+        # відмічаємо як виконану
+        task["completed"] = True
 
         # daily_done
         skill["daily_done"] = True
@@ -616,53 +530,53 @@ class App:
         self.build_skill_screen(skill_id)
 
     def open_add_task_dialog(self, skill_id: str):
-        """Невелике вікно для створення нової задачі."""
+        """Невелике вікно для створення нової задачі (CustomTkinter)."""
         skill = next((s for s in self.data.get("skills", []) if s.get("id") == skill_id), None)
         if not skill:
             messagebox.showerror("Помилка", "Скіл не знайдено")
             return
 
-        win = tk.Toplevel(self.root)
+        win = ctk.CTkToplevel(self.root)
         win.title("Нова задача")
         win.grab_set()
+        win.geometry("380x260")
 
-        frame = ttk.Frame(win, padding=12)
-        frame.pack(fill="both", expand=True)
+        frame = ctk.CTkFrame(win, corner_radius=10)
+        frame.pack(fill="both", expand=True, padx=15, pady=15)
 
         # Назва
-        ttk.Label(frame, text="Назва задачі:").grid(row=0, column=0, sticky="w")
-        entry_name = ttk.Entry(frame, width=30)
-        entry_name.grid(row=0, column=1, sticky="w")
+        ctk.CTkLabel(frame, text="Назва задачі:").grid(row=0, column=0, sticky="w")
+        entry_name = ctk.CTkEntry(frame, width=200)
+        entry_name.grid(row=0, column=1, sticky="w", padx=(8, 0))
 
         # Категорія
-        ttk.Label(frame, text="Категорія:").grid(row=1, column=0, sticky="w", pady=(6, 0))
-        cat_var = tk.StringVar(value="short")
-        combo_cat = ttk.Combobox(
+        ctk.CTkLabel(frame, text="Категорія:").grid(row=1, column=0, sticky="w", pady=(8, 0))
+        cat_var = ctk.StringVar(value="short")
+        combo_cat = ctk.CTkComboBox(
             frame,
-            textvariable=cat_var,
+            variable=cat_var,
             values=["short", "medium", "long", "boss"],
-            state="readonly",
-            width=10
+            width=120
         )
-        combo_cat.grid(row=1, column=1, sticky="w", pady=(6, 0))
+        combo_cat.grid(row=1, column=1, sticky="w", padx=(8, 0), pady=(8, 0))
 
         # XP
-        ttk.Label(frame, text="XP нагорода:").grid(row=2, column=0, sticky="w", pady=(6, 0))
-        entry_xp = ttk.Entry(frame, width=10)
+        ctk.CTkLabel(frame, text="XP нагорода:").grid(row=2, column=0, sticky="w", pady=(8, 0))
+        entry_xp = ctk.CTkEntry(frame, width=80)
         entry_xp.insert(0, "50")
-        entry_xp.grid(row=2, column=1, sticky="w", pady=(6, 0))
+        entry_xp.grid(row=2, column=1, sticky="w", padx=(8, 0), pady=(8, 0))
 
         # USDT
-        ttk.Label(frame, text="USDT нагорода:").grid(row=3, column=0, sticky="w", pady=(6, 0))
-        entry_usdt = ttk.Entry(frame, width=10)
+        ctk.CTkLabel(frame, text="USDT нагорода:").grid(row=3, column=0, sticky="w", pady=(8, 0))
+        entry_usdt = ctk.CTkEntry(frame, width=80)
         entry_usdt.insert(0, "0")
-        entry_usdt.grid(row=3, column=1, sticky="w", pady=(6, 0))
+        entry_usdt.grid(row=3, column=1, sticky="w", padx=(8, 0), pady=(8, 0))
 
         # UAH
-        ttk.Label(frame, text="UAH нагорода:").grid(row=4, column=0, sticky="w", pady=(6, 0))
-        entry_uah = ttk.Entry(frame, width=10)
+        ctk.CTkLabel(frame, text="UAH нагорода:").grid(row=4, column=0, sticky="w", pady=(8, 0))
+        entry_uah = ctk.CTkEntry(frame, width=80)
         entry_uah.insert(0, "0")
-        entry_uah.grid(row=4, column=1, sticky="w", pady=(6, 0))
+        entry_uah.grid(row=4, column=1, sticky="w", padx=(8, 0), pady=(8, 0))
 
         def on_save():
             name = entry_name.get().strip()
@@ -674,10 +588,12 @@ class App:
                 xp_reward = int(entry_xp.get())
             except ValueError:
                 xp_reward = 0
+
             try:
                 money_usdt = float(entry_usdt.get())
             except ValueError:
                 money_usdt = 0.0
+
             try:
                 money_uah = float(entry_uah.get())
             except ValueError:
@@ -690,24 +606,28 @@ class App:
                 "xp_reward": xp_reward,
                 "money_usdt": money_usdt,
                 "money_uah": money_uah,
+                "completed": False,
             }
 
             skill.setdefault("tasks", []).append(new_task)
             save_data(self.data)
             win.destroy()
+            # оновлюємо екран навички, щоб нова задача зʼявилась
             self.build_skill_screen(skill_id)
 
-        btn_save = ttk.Button(frame, text="Зберегти", style="RPG.TButton", command=on_save)
-        btn_save.grid(row=5, column=0, columnspan=2, pady=(12, 0))
+        btn_save = ctk.CTkButton(frame, text="Зберегти", command=on_save)
+        btn_save.grid(row=5, column=0, columnspan=2, pady=(15, 0))
 
+        # щоб форма не зʼїжджала
         for i in range(2):
             frame.grid_columnconfigure(i, weight=1)
 
 
+
     def _create_skill_card(self, parent, skill: dict):
-        """Створює одну картку скіла на головному екрані."""
-        frame = ttk.Frame(parent, padding=10, style="Card.TFrame")
-        frame.pack(fill="x", pady=6)
+        """Одна картка навички в списку (CustomTkinter)."""
+        frame = ctk.CTkFrame(parent)
+        frame.pack(fill="x", pady=6, padx=5)
 
         name = skill.get("name", "???")
         xp = skill.get("xp", 0)
@@ -722,70 +642,56 @@ class App:
             progress = (xp - current_level_xp) / (next_level_xp - current_level_xp)
             progress = max(0.0, min(1.0, progress))
 
-        # Верхній рядок
-        top_row = ttk.Frame(frame, style="Card.TFrame")
-        top_row.pack(fill="x")
+        top_row = ctk.CTkFrame(frame, fg_color="transparent")
+        top_row.pack(fill="x", pady=(5, 0))
 
-        lbl_name = ttk.Label(top_row, text=f"{name}", style="SkillName.TLabel")
-        lbl_name.pack(side="left", anchor="w")
+        ctk.CTkLabel(
+            top_row,
+            text=name,
+            font=("Segoe UI", 13, "bold")
+        ).pack(side="left", anchor="w")
 
-        lbl_level = ttk.Label(
+        ctk.CTkLabel(
             top_row,
             text=f"lvl {lvl} ({title}) | XP: {int(xp)}",
-            style="Stat.TLabel"
-        )
-        lbl_level.pack(side="right", anchor="e")
+            font=("Segoe UI", 11)
+        ).pack(side="right", anchor="e")
 
-        # Прогрес-бар
-        progress_row = ttk.Frame(frame, style="Card.TFrame")
-        progress_row.pack(fill="x", pady=(4, 0))
+        bar = ctk.CTkProgressBar(frame)
+        bar.pack(fill="x", padx=5, pady=(5, 0))
+        bar.set(progress)
 
-        progressbar = ttk.Progressbar(
-            progress_row,
-            orient="horizontal",
-            length=200,
-            mode="determinate",
-            style="XP.Horizontal.TProgressbar"
-        )
-        progressbar.pack(fill="x")
-        progressbar["maximum"] = 100
-        progressbar["value"] = int(progress * 100)
-
-        lbl_progress = ttk.Label(
-            progress_row,
+        ctk.CTkLabel(
+            frame,
             text=f"{int(progress * 100)}% до наступного рівня",
-            style="Stat.TLabel"
-        )
-        lbl_progress.pack(anchor="w")
+            font=("Segoe UI", 10)
+        ).pack(anchor="w", padx=5, pady=(2, 0))
 
-        # Нижній рядок: daily + кнопка
-        bottom_row = ttk.Frame(frame, style="Card.TFrame")
-        bottom_row.pack(fill="x", pady=(4, 0))
+        bottom_row = ctk.CTkFrame(frame, fg_color="transparent")
+        bottom_row.pack(fill="x", pady=(4, 5))
 
         daily_done = skill.get("daily_done", False)
         if daily_done:
             text = "Сьогодні зроблено ✅"
-            fg = "#22c55e"
+            color = "#22c55e"
         else:
             text = "Сьогодні ще нічого ❗"
-            fg = "#f97316"
+            color = "#f97316"
 
-        lbl_daily = tk.Label(
+        ctk.CTkLabel(
             bottom_row,
             text=text,
-            fg=fg,
-            bg="#0b1220",
-            font=("Segoe UI", 9)
-        )
-        lbl_daily.pack(side="left", anchor="w")
+            text_color=color,
+            font=("Segoe UI", 10)
+        ).pack(side="left", anchor="w", padx=5)
 
-        btn_open = ttk.Button(
+        ctk.CTkButton(
             bottom_row,
             text="Відкрити",
-            style="RPG.TButton",
+            width=100,
             command=lambda s_id=skill["id"]: self.open_skill(s_id)
-        )
-        btn_open.pack(side="right")
+        ).pack(side="right", padx=5)
+
 
     # ---------- Обробники ----------
 
@@ -801,6 +707,10 @@ class App:
 
 
 if __name__ == "__main__":
-    root = tk.Tk()
+    ctk.set_appearance_mode("dark")         # "dark" / "light" / "system"
+    ctk.set_default_color_theme("dark-blue")  # або "green", "blue", "dark-blue"
+
+    root = ctk.CTk()
+    root.title("RPGLife")
     app = App(root)
     root.mainloop()
