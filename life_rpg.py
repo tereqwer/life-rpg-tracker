@@ -6,6 +6,8 @@ from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 from datetime import date
 import time
+import tkinter.font as tkfont
+
 
 
 DATA_FILE = "data.json"
@@ -29,6 +31,25 @@ def xp_to_level(xp: float) -> int:
     level = int((xp / 120.0) ** (1.0 / 1.6))
     return min(level, 40)  # обмеження до 40-го рівня
 
+def title_for_level(level: int) -> str:
+    """Титул за рівнем навички."""
+    if level < 1:
+        return "Новачок"
+    if level <= 5:
+        return "Новачок"
+    if level <= 10:
+        return "Учень"
+    if level <= 15:
+        return "Практик"
+    if level <= 20:
+        return "Просунутий"
+    if level <= 25:
+        return "Експерт"
+    if level <= 30:
+        return "Майстер"
+    if level <= 35:
+        return "Грандмайстер"
+    return "Легенда"
 
 def level_to_xp(level: int) -> float:
     """Скільки XP треба для певного рівня (сукупний поріг)."""
@@ -401,6 +422,7 @@ class App:
         name = skill.get("name", "???")
         xp = skill.get("xp", 0)
         lvl = xp_to_level(xp)
+        title = title_for_level(lvl)
         current_level_xp = level_to_xp(lvl)
         next_level_xp = level_to_xp(lvl + 1) if lvl < 40 else level_to_xp(lvl)
         if next_level_xp <= current_level_xp:
@@ -433,7 +455,7 @@ class App:
 
         lbl_lvl = ttk.Label(
             stats_frame,
-            text=f"Рівень: {lvl}   XP: {int(xp)}",
+            text=f"Рівень: {lvl} ({title})   XP: {int(xp)}",
             style="HeroStat.TLabel"
         )
         lbl_lvl.pack(anchor="w")
@@ -690,6 +712,7 @@ class App:
         name = skill.get("name", "???")
         xp = skill.get("xp", 0)
         lvl = xp_to_level(xp)
+        title = title_for_level(lvl)
 
         current_level_xp = level_to_xp(lvl)
         next_level_xp = level_to_xp(lvl + 1) if lvl < 40 else level_to_xp(lvl)
@@ -708,7 +731,7 @@ class App:
 
         lbl_level = ttk.Label(
             top_row,
-            text=f"lvl {lvl} | XP: {int(xp)}",
+            text=f"lvl {lvl} ({title}) | XP: {int(xp)}",
             style="Stat.TLabel"
         )
         lbl_level.pack(side="right", anchor="e")
