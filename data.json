@@ -13,9 +13,21 @@
       "id": "english",
       "name": "Англійська",
       "type": "language",
-      "xp": 0,
+      "xp": 554,
       "daily_done": true,
       "tasks": [
+        {
+          "id": "task_1763308165494",
+          "name": "2",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false,
+          "target_value": 111.0,
+          "current_value": 12.0,
+          "time_spent": 10
+        }
       ],
       "cefr": "A0"
     },
@@ -25,8 +37,7 @@
       "type": "language",
       "xp": 0,
       "daily_done": true,
-      "tasks": [
-      ],
+      "tasks": [],
       "cefr": "A0"
     },
     {

@@ -208,12 +208,120 @@ class App:
         self.data = load_data()
         # Перевіряємо, чи новий день — якщо так, скидаємо daily_done
         self.ensure_daily_reset()
-
         # Побудова головного екрану
         self.build_main_screen()
 
 
     # ---------- Допоміжні методи ----------
+    def start_task_timer(self, skill_id: str, task_id: str):
+        """Плаваючий таймер поверх усіх вікон для задачі."""
+        # шукаємо навичку і задачу
+        skill = next((s for s in self.data.get("skills", []) if s.get("id") == skill_id), None)
+        if not skill:
+            return
+
+        task = next((t for t in skill.get("tasks", []) if t.get("id") == task_id), None)
+        if not task:
+            return
+
+        # базові значення
+        base_seconds = int(task.get("time_spent", 0))
+
+        win = ctk.CTkToplevel(self.root)
+        win.title("Таймер задачі")
+        win.geometry("260x160")
+        win.attributes("-topmost", True)
+        win.grab_set()
+
+        frame = ctk.CTkFrame(win, corner_radius=10)
+        frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+        ctk.CTkLabel(
+            frame,
+            text=task.get("name", "Задача"),
+            font=("Segoe UI", 13, "bold")
+        ).pack(pady=(0, 4))
+
+        timer_label = ctk.CTkLabel(
+            frame,
+            text="00:00:00",
+            font=("Segoe UI", 24, "bold")
+        )
+        timer_label.pack(pady=(0, 6))
+
+        status_label = ctk.CTkLabel(
+            frame,
+            text="Йде відлік...",
+            font=("Segoe UI", 11)
+        )
+        status_label.pack(pady=(0, 8))
+
+        start_time = time.time()
+        running = {"value": True}  # маленький хак через dict, щоб змінювати всередині
+
+        def format_time(total_sec: int) -> str:
+            h = total_sec // 3600
+            m = (total_sec % 3600) // 60
+            s = total_sec % 60
+            return f"{h:02d}:{m:02d}:{s:02d}"
+
+        def tick():
+            if not running["value"]:
+                return
+            if not win.winfo_exists():
+                return
+
+            now = time.time()
+            elapsed = int(now - start_time)
+            total = base_seconds + elapsed
+            timer_label.configure(text=format_time(total))
+            win.after(1000, tick)
+
+        tick()  # стартуємо цикл
+
+        def save_time_and_close(mark_completed: bool):
+            """Зберігає час, оновлює задачу, закриває таймер."""
+            running["value"] = False
+            now = time.time()
+            elapsed = int(now - start_time)
+            total = base_seconds + elapsed
+
+            task["time_spent"] = total
+            save_data(self.data)
+
+            if mark_completed:
+                # виконуємо задачу і додаємо XP
+                self.execute_task(skill_id, task_id)
+
+            win.destroy()
+
+        def on_in_progress():
+            status_label.configure(text="Збережено як 'в процесі'")
+            save_time_and_close(mark_completed=False)
+
+        def on_done():
+            status_label.configure(text="Завершено ✅")
+            save_time_and_close(mark_completed=True)
+
+        btn_row = ctk.CTkFrame(frame, fg_color="transparent")
+        btn_row.pack(pady=(4, 0))
+
+        ctk.CTkButton(
+            btn_row,
+            text="В процесі",
+            width=90,
+            command=on_in_progress
+        ).pack(side="left", padx=4)
+
+        ctk.CTkButton(
+            btn_row,
+            text="Виконано",
+            width=90,
+            fg_color="#22c55e",
+            command=on_done
+        ).pack(side="left", padx=4)
+
+
 
     def get_total_xp(self) -> float:
         """Сумарний XP героя — сума XP по всіх скілах."""
@@ -413,7 +521,173 @@ class App:
         for skill in self.data.get("skills", []):
             self._create_skill_card(scroll, skill)
 
+    def open_edit_task_dialog(self, skill_id: str, task_id: str):
+        """Вікно для редагування існуючої задачі (CustomTkinter)."""
+        # шукаємо навичку
+        skill = next((s for s in self.data.get("skills", []) if s.get("id") == skill_id), None)
+        if not skill:
+            messagebox.showerror("Помилка", "Скіл не знайдено")
+            return
 
+        # шукаємо задачу
+        task = next((t for t in skill.get("tasks", []) if t.get("id") == task_id), None)
+        if not task:
+            messagebox.showerror("Помилка", "Задачу не знайдено")
+            return
+
+        win = ctk.CTkToplevel(self.root)
+        win.title("Редагувати задачу")
+        win.grab_set()
+        win.geometry("380x340")
+
+        frame = ctk.CTkFrame(win, corner_radius=10)
+        frame.pack(fill="both", expand=True, padx=15, pady=15)
+
+        # ---- Назва ----
+        ctk.CTkLabel(frame, text="Назва задачі:").grid(row=0, column=0, sticky="w")
+        entry_name = ctk.CTkEntry(frame, width=220)
+        entry_name.grid(row=0, column=1, sticky="w", padx=(8, 0), pady=(0, 6))
+        entry_name.insert(0, task.get("name", ""))
+
+        # ---- Категорія ----
+        ctk.CTkLabel(frame, text="Категорія:").grid(row=1, column=0, sticky="w")
+        cat_var = ctk.StringVar(value=task.get("category", "short"))
+        combo_cat = ctk.CTkComboBox(
+            frame,
+            variable=cat_var,
+            values=["short", "medium", "long", "boss"],
+            width=120
+        )
+        combo_cat.grid(row=1, column=1, sticky="w", padx=(8, 0), pady=(0, 6))
+
+        # ---- XP ----
+        ctk.CTkLabel(frame, text="XP нагорода:").grid(row=2, column=0, sticky="w")
+        entry_xp = ctk.CTkEntry(frame, width=80)
+        entry_xp.grid(row=2, column=1, sticky="w", padx=(8, 0), pady=(0, 6))
+        entry_xp.insert(0, str(task.get("xp_reward", 0)))
+
+        # ---- USDT ----
+        ctk.CTkLabel(frame, text="USDT нагорода:").grid(row=3, column=0, sticky="w")
+        entry_usdt = ctk.CTkEntry(frame, width=80)
+        entry_usdt.grid(row=3, column=1, sticky="w", padx=(8, 0), pady=(0, 6))
+        entry_usdt.insert(0, str(task.get("money_usdt", 0.0)))
+
+        # ---- UAH ----
+        ctk.CTkLabel(frame, text="UAH нагорода:").grid(row=4, column=0, sticky="w")
+        entry_uah = ctk.CTkEntry(frame, width=80)
+        entry_uah.grid(row=4, column=1, sticky="w", padx=(8, 0), pady=(0, 6))
+        entry_uah.insert(0, str(task.get("money_uah", 0.0)))
+
+        # ---- ЦІЛЬ ----
+        ctk.CTkLabel(frame, text="Ціль (всього):").grid(row=5, column=0, sticky="w")
+        entry_target = ctk.CTkEntry(frame, width=80)
+        entry_target.grid(row=5, column=1, sticky="w", padx=(8, 0), pady=(0, 6))
+        entry_target.insert(0, str(task.get("target_value", 0)))
+
+        # ---- ЗАРАЗ ЗРОБЛЕНО ----
+        ctk.CTkLabel(frame, text="Зараз зроблено:").grid(row=6, column=0, sticky="w")
+        entry_current = ctk.CTkEntry(frame, width=80)
+        entry_current.grid(row=6, column=1, sticky="w", padx=(8, 0), pady=(0, 10))
+        entry_current.insert(0, str(task.get("current_value", 0)))
+
+        # (опціонально) можна показати скільки часу вже витрачено
+        time_spent = int(task.get("time_spent", 0))
+        if time_spent > 0:
+            h = time_spent // 3600
+            m = (time_spent % 3600) // 60
+            s = time_spent % 60
+            ctk.CTkLabel(
+                frame,
+                text=f"Час на задачі: {h:02d}:{m:02d}:{s:02d}",
+                font=("Segoe UI", 10),
+                text_color="#9ca3af"
+            ).grid(row=7, column=0, columnspan=2, pady=(0, 6))
+
+        def on_save():
+            name = entry_name.get().strip()
+            if not name:
+                messagebox.showerror("Помилка", "Назва задачі не може бути порожньою")
+                return
+
+            # XP
+            try:
+                xp_val = int(entry_xp.get())
+            except ValueError:
+                messagebox.showerror("Помилка", "XP має бути числом")
+                return
+
+            # Гроші
+            try:
+                usdt_val = float(entry_usdt.get())
+            except ValueError:
+                usdt_val = 0.0
+
+            try:
+                uah_val = float(entry_uah.get())
+            except ValueError:
+                uah_val = 0.0
+
+            # Ціль / поточне
+            try:
+                target_val = float(entry_target.get())
+            except ValueError:
+                target_val = 0.0
+
+            try:
+                current_val = float(entry_current.get())
+            except ValueError:
+                current_val = 0.0
+
+            # оновлюємо задачу
+            task["name"] = name
+            task["category"] = cat_var.get()
+            task["xp_reward"] = xp_val
+            task["money_usdt"] = usdt_val
+            task["money_uah"] = uah_val
+            task["target_value"] = target_val
+            task["current_value"] = current_val
+
+            save_data(self.data)
+            win.destroy()
+            self.build_skill_screen(skill_id)
+
+        btn_save = ctk.CTkButton(frame, text="Зберегти", command=on_save, width=120)
+        btn_save.grid(row=8, column=0, columnspan=2, pady=(8, 0))
+
+        for i in range(2):
+            frame.grid_columnconfigure(i, weight=1)
+
+
+    def delete_task(self, skill_id: str, task_id: str):
+        """Видалити задачу з навички."""
+        skill = next((s for s in self.data.get("skills", []) if s.get("id") == skill_id), None)
+        if not skill:
+            messagebox.showerror("Помилка", "Скіл не знайдено")
+            return
+
+        tasks = skill.get("tasks", [])
+        task = next((t for t in tasks if t.get("id") == task_id), None)
+        if not task:
+            messagebox.showerror("Помилка", "Задачу не знайдено")
+            return
+
+        confirm = messagebox.askyesno(
+            "Підтвердження",
+            f"Точно видалити задачу:\n\n{task.get('name', 'Без назви')}?"
+        )
+        if not confirm:
+            return
+
+        # видаляємо
+        tasks.remove(task)
+        save_data(self.data)
+
+        # якщо після видалення в скіла немає невиконаних задач — daily_done можна скинути
+        if not any(not t.get("completed") for t in tasks):
+            skill["daily_done"] = False
+
+        # оновлюємо екран навички
+        self.build_skill_screen(skill_id)
 
 
     def build_skill_screen(self, skill_id: str):
@@ -528,6 +802,27 @@ class App:
         )
         lbl_progress.pack(anchor="w", padx=10, pady=(4, 8))
 
+   # -------- Загальний час на цю навичку --------
+        total_seconds = 0
+        for t in skill.get("tasks", []):
+            try:
+                total_seconds += int(t.get("time_spent", 0) or 0)
+            except (TypeError, ValueError):
+                pass
+
+        h = total_seconds // 3600
+        m = (total_seconds % 3600) // 60
+        s = total_seconds % 60
+
+        ctk.CTkLabel(
+            stats_frame,
+            text=f"Час на навичці: {h:02d}:{m:02d}:{s:02d}",
+            font=("Segoe UI", 11),
+            text_color="#9ca3af"
+        ).pack(anchor="w", pady=(2, 0))
+
+
+
 
          # --------- блок задач ---------
         tasks_header = ctk.CTkFrame(main_frame, fg_color="transparent")
@@ -632,14 +927,66 @@ class App:
         )
         lbl_rewards.pack(anchor="w", pady=(2, 0))
 
-        # права частина — кнопка
+        # --- Прогрес-бар по задачі (якщо задана ціль) ---
+        target_val = task.get("target_value", 0)
+        current_val = task.get("current_value", 0)
+
+        if target_val and target_val > 0:
+            progress = max(0.0, min(1.0, current_val / target_val))
+            progress_bar = ctk.CTkProgressBar(row, width=180)
+            progress_bar.pack(side="left", padx=(10, 0), pady=(4, 4))
+            progress_bar.set(progress)
+
+            percent = int(progress * 100)
+            ctk.CTkLabel(
+                row,
+                text=f"{current_val:.0f} / {target_val:.0f} ({percent}%)",
+                font=("Segoe UI", 10),
+                text_color="#9ca3af"
+            ).pack(side="left", padx=(8, 0))
+
+
+        # права частина — кнопки дій
+        buttons_frame = ctk.CTkFrame(row, fg_color="transparent")
+        buttons_frame.pack(side="right", padx=5)
+
         btn_do = ctk.CTkButton(
-            row,
+            buttons_frame,
             text="Виконати",
-            width=100,
+            width=90,
             command=lambda s_id=skill_id, t_id=task.get("id"): self.execute_task(s_id, t_id)
         )
-        btn_do.pack(side="right", padx=5)
+        btn_do.pack(side="top", pady=(0, 2))
+
+        # Таймер тільки для коротких задач
+        if task.get("category") == "short":
+            btn_timer = ctk.CTkButton(
+                buttons_frame,
+                text="До виконання",
+                width=90,
+                fg_color="#22c55e",
+                command=lambda s=skill_id, t=task.get("id"): self.start_task_timer(s, t)
+            )
+            btn_timer.pack(side="top", pady=(3, 0))
+
+        # маленькі кнопки редагувати / видалити
+        btn_edit = ctk.CTkButton(
+            buttons_frame,
+            text="Редагувати",
+            width=40,
+            fg_color="#3b82f6",
+            command=lambda s_id=skill_id, t_id=task.get("id"): self.open_edit_task_dialog(s_id, t_id)
+        )
+        btn_edit.pack(side="left", padx=(0, 2))
+
+        btn_delete = ctk.CTkButton(
+            buttons_frame,
+            text="Видалити",
+            width=40,
+            fg_color="#ef4444",
+            command=lambda s_id=skill_id, t_id=task.get("id"): self.delete_task(s_id, t_id)
+        )
+        btn_delete.pack(side="left")
 
         if completed:
             btn_do.configure(state="disabled")
@@ -765,6 +1112,8 @@ class App:
 
     def open_add_task_dialog(self, skill_id: str):
         """Невелике вікно для створення нової задачі (CustomTkinter)."""
+        import time
+
         skill = next((s for s in self.data.get("skills", []) if s.get("id") == skill_id), None)
         if not skill:
             messagebox.showerror("Помилка", "Скіл не знайдено")
@@ -773,18 +1122,18 @@ class App:
         win = ctk.CTkToplevel(self.root)
         win.title("Нова задача")
         win.grab_set()
-        win.geometry("380x260")
+        win.geometry("380x320")
 
         frame = ctk.CTkFrame(win, corner_radius=10)
         frame.pack(fill="both", expand=True, padx=15, pady=15)
 
-        # Назва
+        # ---- Назва ----
         ctk.CTkLabel(frame, text="Назва задачі:").grid(row=0, column=0, sticky="w")
-        entry_name = ctk.CTkEntry(frame, width=200)
-        entry_name.grid(row=0, column=1, sticky="w", padx=(8, 0))
+        entry_name = ctk.CTkEntry(frame, width=220)
+        entry_name.grid(row=0, column=1, sticky="w", padx=(8, 0), pady=(0, 6))
 
-        # Категорія
-        ctk.CTkLabel(frame, text="Категорія:").grid(row=1, column=0, sticky="w", pady=(8, 0))
+        # ---- Категорія ----
+        ctk.CTkLabel(frame, text="Категорія:").grid(row=1, column=0, sticky="w")
         cat_var = ctk.StringVar(value="short")
         combo_cat = ctk.CTkComboBox(
             frame,
@@ -792,71 +1141,99 @@ class App:
             values=["short", "medium", "long", "boss"],
             width=120
         )
-        combo_cat.grid(row=1, column=1, sticky="w", padx=(8, 0), pady=(8, 0))
+        combo_cat.grid(row=1, column=1, sticky="w", padx=(8, 0), pady=(0, 6))
 
-        # XP
-        ctk.CTkLabel(frame, text="XP нагорода:").grid(row=2, column=0, sticky="w", pady=(8, 0))
+        # ---- XP ----
+        ctk.CTkLabel(frame, text="XP нагорода:").grid(row=2, column=0, sticky="w")
         entry_xp = ctk.CTkEntry(frame, width=80)
+        entry_xp.grid(row=2, column=1, sticky="w", padx=(8, 0), pady=(0, 6))
         entry_xp.insert(0, "50")
-        entry_xp.grid(row=2, column=1, sticky="w", padx=(8, 0), pady=(8, 0))
 
-        # USDT
-        ctk.CTkLabel(frame, text="USDT нагорода:").grid(row=3, column=0, sticky="w", pady=(8, 0))
+        # ---- USDT ----
+        ctk.CTkLabel(frame, text="USDT нагорода:").grid(row=3, column=0, sticky="w")
         entry_usdt = ctk.CTkEntry(frame, width=80)
+        entry_usdt.grid(row=3, column=1, sticky="w", padx=(8, 0), pady=(0, 6))
         entry_usdt.insert(0, "0")
-        entry_usdt.grid(row=3, column=1, sticky="w", padx=(8, 0), pady=(8, 0))
 
-        # UAH
-        ctk.CTkLabel(frame, text="UAH нагорода:").grid(row=4, column=0, sticky="w", pady=(8, 0))
+        # ---- UAH ----
+        ctk.CTkLabel(frame, text="UAH нагорода:").grid(row=4, column=0, sticky="w")
         entry_uah = ctk.CTkEntry(frame, width=80)
+        entry_uah.grid(row=4, column=1, sticky="w", padx=(8, 0), pady=(0, 6))
         entry_uah.insert(0, "0")
-        entry_uah.grid(row=4, column=1, sticky="w", padx=(8, 0), pady=(8, 0))
+
+        # ---- Ціль (всього) ----
+        ctk.CTkLabel(frame, text="Ціль (всього):").grid(row=5, column=0, sticky="w")
+        entry_target = ctk.CTkEntry(frame, width=80)
+        entry_target.grid(row=5, column=1, sticky="w", padx=(8, 0), pady=(0, 6))
+        entry_target.insert(0, "0")
+
+        # ---- Зараз зроблено ----
+        ctk.CTkLabel(frame, text="Зараз зроблено:").grid(row=6, column=0, sticky="w")
+        entry_current = ctk.CTkEntry(frame, width=80)
+        entry_current.grid(row=6, column=1, sticky="w", padx=(8, 0), pady=(0, 10))
+        entry_current.insert(0, "0")
 
         def on_save():
             name = entry_name.get().strip()
             if not name:
-                messagebox.showerror("Помилка", "Назва задачі не може бути порожня")
+                messagebox.showerror("Помилка", "Назва задачі не може бути порожньою")
                 return
 
+            # XP
             try:
-                xp_reward = int(entry_xp.get())
+                xp_val = int(entry_xp.get())
             except ValueError:
-                xp_reward = 0
+                messagebox.showerror("Помилка", "XP має бути числом")
+                return
+
+            # Гроші
+            try:
+                usdt_val = float(entry_usdt.get())
+            except ValueError:
+                usdt_val = 0.0
 
             try:
-                money_usdt = float(entry_usdt.get())
+                uah_val = float(entry_uah.get())
             except ValueError:
-                money_usdt = 0.0
+                uah_val = 0.0
+
+            # Ціль / поточне
+            try:
+                target_val = float(entry_target.get())
+            except ValueError:
+                target_val = 0.0
 
             try:
-                money_uah = float(entry_uah.get())
+                current_val = float(entry_current.get())
             except ValueError:
-                money_uah = 0.0
+                current_val = 0.0
 
-            new_task = {
-                "id": f"task_{int(time.time() * 1000)}",
+            new_id = f"task_{int(time.time() * 1000)}"
+
+            task = {
+                "id": new_id,
                 "name": name,
                 "category": cat_var.get(),
-                "xp_reward": xp_reward,
-                "money_usdt": money_usdt,
-                "money_uah": money_uah,
+                "xp_reward": xp_val,
+                "money_usdt": usdt_val,
+                "money_uah": uah_val,
                 "completed": False,
+                "target_value": target_val,
+                "current_value": current_val,
+                "time_spent": 0,  # секунди, будемо нарощувати таймером
             }
 
-            skill.setdefault("tasks", []).append(new_task)
+            skill.setdefault("tasks", []).append(task)
             save_data(self.data)
+
             win.destroy()
-            # оновлюємо екран навички, щоб нова задача зʼявилась
             self.build_skill_screen(skill_id)
 
-        btn_save = ctk.CTkButton(frame, text="Зберегти", command=on_save)
-        btn_save.grid(row=5, column=0, columnspan=2, pady=(15, 0))
+        btn_save = ctk.CTkButton(frame, text="Зберегти", command=on_save, width=120)
+        btn_save.grid(row=7, column=0, columnspan=2, pady=(8, 0))
 
-        # щоб форма не зʼїжджала
         for i in range(2):
             frame.grid_columnconfigure(i, weight=1)
-
-
 
     def _create_skill_card(self, parent, skill: dict):
         """Одна картка навички в списку (CustomTkinter)."""

@@ -13,8 +13,8 @@
       "id": "english",
       "name": "Англійська",
       "type": "language",
-      "xp": 5000,
-      "daily_done": false,
+      "xp": 5140,
+      "daily_done": true,
       "tasks": [
         {
           "id": "task_1763287708664",
@@ -32,7 +32,7 @@
           "xp_reward": 20,
           "money_usdt": 0.0,
           "money_uah": 0.0,
-          "completed": false
+          "completed": true
         },
         {
           "id": "task_1763287758585",
@@ -41,7 +41,7 @@
           "xp_reward": 20,
           "money_usdt": 0.0,
           "money_uah": 0.0,
-          "completed": false
+          "completed": true
         },
         {
           "id": "task_1763287786244",
@@ -90,7 +90,7 @@
         },
         {
           "id": "task_1763287971667",
-          "name": "Present simple",
+          "name": "Pres1 simple",
           "category": "short",
           "xp_reward": 50,
           "money_usdt": 0.0,
@@ -123,6 +123,51 @@
           "money_usdt": 0.0,
           "money_uah": 0.0,
           "completed": false
+        },
+        {
+          "id": "task_1763291134851",
+          "name": "Переклад тексту",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": true
+        },
+        {
+          "id": "task_1763291151807",
+          "name": "Коротенький твір про себе 8-12 речень",
+          "category": "medium",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763293393427",
+          "name": "Прочитати книгу англійською",
+          "category": "boss",
+          "xp_reward": 2000,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763295262028",
+          "name": "10 речень зі словами з карточок",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763295279550",
+          "name": "Повторити 20 карточок",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": true
         }
       ],
       "cefr": "B1"
@@ -131,8 +176,8 @@
       "id": "french",
       "name": "Французька",
       "type": "language",
-      "xp": 0,
-      "daily_done": false,
+      "xp": 130,
+      "daily_done": true,
       "tasks": [
         {
           "id": "task_1763288128351",
@@ -141,7 +186,7 @@
           "xp_reward": 80,
           "money_usdt": 0.0,
           "money_uah": 0.0,
-          "completed": false
+          "completed": true
         },
         {
           "id": "task_1763288140747",
@@ -150,7 +195,7 @@
           "xp_reward": 50,
           "money_usdt": 0.0,
           "money_uah": 0.0,
-          "completed": false
+          "completed": true
         },
         {
           "id": "task_1763288147326",
@@ -205,6 +250,123 @@
           "money_usdt": 0.0,
           "money_uah": 0.0,
           "completed": false
+        },
+        {
+          "id": "task_1763290785433",
+          "name": "Avoir",
+          "category": "medium",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763290797347",
+          "name": "Особові займенники",
+          "category": "medium",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763290806847",
+          "name": "Артиклі",
+          "category": "medium",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763290814951",
+          "name": "Заперечення",
+          "category": "medium",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763290823333",
+          "name": "Множина",
+          "category": "medium",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763290836075",
+          "name": "Узгодження прикметників",
+          "category": "medium",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763290850199",
+          "name": "Питальні речення",
+          "category": "medium",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763290855524",
+          "name": "Присвійні",
+          "category": "medium",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763290861659",
+          "name": "Вказівні",
+          "category": "medium",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763290871983",
+          "name": "Дієслова -ER",
+          "category": "medium",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763290881697",
+          "name": "Дієслова -IR",
+          "category": "medium",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763290895026",
+          "name": "Ключові неправильні дієслова",
+          "category": "medium",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763291164219",
+          "name": "A1",
+          "category": "long",
+          "xp_reward": 555,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
         }
       ],
       "cefr": "A0"
@@ -213,9 +375,73 @@
       "id": "x_growth",
       "name": "X (Twitter) розвиток",
       "type": "general",
-      "xp": 150,
-      "daily_done": false,
-      "tasks": [],
+      "xp": 250,
+      "daily_done": true,
+      "tasks": [
+        {
+          "id": "task_1763291181364",
+          "name": "Пост про айріс",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": true
+        },
+        {
+          "id": "task_1763291185948",
+          "name": "Пост гм",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": true
+        },
+        {
+          "id": "task_1763291195926",
+          "name": "Детальний тред про шось",
+          "category": "medium",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763291204604",
+          "name": "1000 підписників",
+          "category": "long",
+          "xp_reward": 550,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763291216880",
+          "name": "Підписатись на 30 чоловік",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763291221961",
+          "name": "30 коментів",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763291231840",
+          "name": "10 підписок смартів",
+          "category": "medium",
+          "xp_reward": 250,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        }
+      ],
       "cefr": ""
     },
     {
@@ -231,9 +457,154 @@
       "id": "sport",
       "name": "Спорт",
       "type": "general",
-      "xp": 0,
-      "daily_done": false,
-      "tasks": [],
+      "xp": 50,
+      "daily_done": true,
+      "tasks": [
+        {
+          "id": "task_1763291922999",
+          "name": "40 віджимань",
+          "category": "short",
+          "xp_reward": 120,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763291935811",
+          "name": "3х400 на максимум",
+          "category": "short",
+          "xp_reward": 100,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763291948494",
+          "name": "3х100 з повним відновленням",
+          "category": "short",
+          "xp_reward": 130,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763291959829",
+          "name": "30 легкий біг",
+          "category": "short",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763291973756",
+          "name": "5 підходів по макс підтягувань",
+          "category": "short",
+          "xp_reward": 120,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763291984794",
+          "name": "100 присідань",
+          "category": "short",
+          "xp_reward": 100,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763292018882",
+          "name": "Віджиматись 60 раз",
+          "category": "medium",
+          "xp_reward": 250,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763292031046",
+          "name": "Підтягуватись 12 раз",
+          "category": "medium",
+          "xp_reward": 250,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763292041977",
+          "name": "пробігти 3 км за 11:30",
+          "category": "medium",
+          "xp_reward": 350,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763292051458",
+          "name": "Пробігти 5 км за 22",
+          "category": "medium",
+          "xp_reward": 450,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763292076293",
+          "name": "Пробігти 22 км",
+          "category": "boss",
+          "xp_reward": 1000,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763292085549",
+          "name": "Віджатись 100 раз",
+          "category": "boss",
+          "xp_reward": 1200,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763292095407",
+          "name": "Підтягуватись 20 раз",
+          "category": "long",
+          "xp_reward": 1200,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763292114114",
+          "name": "Дійти до 70 віджимань",
+          "category": "long",
+          "xp_reward": 1100,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763292126736",
+          "name": "Треня на турніках",
+          "category": "short",
+          "xp_reward": 200,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763302528825",
+          "name": "15 норм віджимань",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": true
+        }
+      ],
       "cefr": ""
     },
     {
@@ -243,6 +614,116 @@
       "xp": 0,
       "daily_done": false,
       "tasks": [],
+      "cefr": ""
+    },
+    {
+      "id": "skill_1763291284545",
+      "name": "Навчання",
+      "type": "general",
+      "xp": 0,
+      "daily_done": false,
+      "tasks": [
+        {
+          "id": "task_1763291301438",
+          "name": "Розділ 1",
+          "category": "short",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763291307261",
+          "name": "Розділ 2",
+          "category": "short",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763291311815",
+          "name": "Розділ 3",
+          "category": "short",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763291319314",
+          "name": "Розділ 4",
+          "category": "short",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763291330399",
+          "name": "Пройти антиплагіат",
+          "category": "medium",
+          "xp_reward": 350,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763291343361",
+          "name": "Здати дипломну",
+          "category": "long",
+          "xp_reward": 1550,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        }
+      ],
+      "cefr": ""
+    },
+    {
+      "id": "skill_1763293405248",
+      "name": "Читання",
+      "type": "general",
+      "xp": 0,
+      "daily_done": false,
+      "tasks": [
+        {
+          "id": "task_1763293421085",
+          "name": "Прочитати 30 сторінок",
+          "category": "short",
+          "xp_reward": 150,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763293431806",
+          "name": "Прочитати 10 книг",
+          "category": "long",
+          "xp_reward": 1500,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763293444780",
+          "name": "Прочитати за день 200 сторінок",
+          "category": "boss",
+          "xp_reward": 1200,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763293450333",
+          "name": "Прочитати книгу",
+          "category": "medium",
+          "xp_reward": 350,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        }
+      ],
       "cefr": ""
     }
   ],
