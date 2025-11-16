@@ -1,0 +1,251 @@
+{
+  "hero": {
+    "name": "Pasha",
+    "xp_total": 0,
+    "money_usdt": 1350.0,
+    "money_uah": 11250.0,
+    "hp_current": 100,
+    "hp_max": 100,
+    "avatar_path": "avatar.jpg"
+  },
+  "skills": [
+    {
+      "id": "english",
+      "name": "Англійська",
+      "type": "language",
+      "xp": 5000,
+      "daily_done": false,
+      "tasks": [
+        {
+          "id": "task_1763287708664",
+          "name": "Говорити добу лише англійською",
+          "category": "boss",
+          "xp_reward": 1000,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763287745622",
+          "name": "Подивитись урок",
+          "category": "short",
+          "xp_reward": 20,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763287758585",
+          "name": "Записати 20 карточок",
+          "category": "short",
+          "xp_reward": 20,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763287786244",
+          "name": "Мати 100 карточок",
+          "category": "medium",
+          "xp_reward": 200,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763287802237",
+          "name": "B2",
+          "category": "long",
+          "xp_reward": 1200,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763287870209",
+          "name": "Вивчити теперешній час",
+          "category": "medium",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763287886254",
+          "name": "Минулий час",
+          "category": "medium",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763287894065",
+          "name": "Майбутній час",
+          "category": "medium",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763287971667",
+          "name": "Present simple",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763287980194",
+          "name": "Present  continious",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763287986252",
+          "name": "Present perfect",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763287998391",
+          "name": "present perfect continous",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        }
+      ],
+      "cefr": "B1"
+    },
+    {
+      "id": "french",
+      "name": "Французька",
+      "type": "language",
+      "xp": 0,
+      "daily_done": false,
+      "tasks": [
+        {
+          "id": "task_1763288128351",
+          "name": "Відео урок",
+          "category": "short",
+          "xp_reward": 80,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763288140747",
+          "name": "20 карточок",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763288147326",
+          "name": "Скласти 10 речень",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763288154035",
+          "name": "Повторити слова",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763288166539",
+          "name": "Послухати подкаст",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763288171135",
+          "name": "Перекласти 10 фраз",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763290201778",
+          "name": "Вивчити 50 нових слів",
+          "category": "medium",
+          "xp_reward": 300,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        },
+        {
+          "id": "task_1763290220175",
+          "name": "Написати текст про себе 8-12 речень.",
+          "category": "medium",
+          "xp_reward": 350,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false
+        }
+      ],
+      "cefr": "A0"
+    },
+    {
+      "id": "x_growth",
+      "name": "X (Twitter) розвиток",
+      "type": "general",
+      "xp": 150,
+      "daily_done": false,
+      "tasks": [],
+      "cefr": ""
+    },
+    {
+      "id": "youtube",
+      "name": "YouTube канал",
+      "type": "general",
+      "xp": 0,
+      "daily_done": false,
+      "tasks": [],
+      "cefr": ""
+    },
+    {
+      "id": "sport",
+      "name": "Спорт",
+      "type": "general",
+      "xp": 0,
+      "daily_done": false,
+      "tasks": [],
+      "cefr": ""
+    },
+    {
+      "id": "programming",
+      "name": "Програмування",
+      "type": "general",
+      "xp": 0,
+      "daily_done": false,
+      "tasks": [],
+      "cefr": ""
+    }
+  ],
+  "global_tasks": [],
+  "last_daily_reset": "2025-11-16"
+}

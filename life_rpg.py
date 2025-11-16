@@ -1,5 +1,6 @@
 import json
-import os
+import os, sys
+import winsound
 import math
 import customtkinter as ctk
 from tkinter import messagebox
@@ -8,7 +9,18 @@ from datetime import date
 import time
 import tkinter.font as tkfont
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+LEVEL_UP_SOUND_PATH = os.path.join(BASE_DIR, "lvlup.wav")
 
+
+if getattr(sys, "frozen", False):
+    BASE_DIR = os.path.dirname(sys.executable)      # коли запаковано в .exe
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # звичайний .py
+
+LEVEL_UP_SOUND_PATH = os.path.join(BASE_DIR, "lvlup.wav")
+DATA_PATH = os.path.join(BASE_DIR, "data.json")
+AVATAR_PATH = os.path.join(BASE_DIR, "avatar.jpg")
 
 DATA_FILE = "data.json"
 
@@ -213,14 +225,46 @@ class App:
         return xp_to_level(total_xp)
     
     def on_level_up(self, skill: dict, old_lvl: int, new_lvl: int):
-        """Попап + звук при переході на новий рівень."""
+        """Попап + кастомний звук при переході на новий рівень — без системного дзвону."""
         skill_name = skill.get("name", "Навичка")
 
-        messagebox.showinfo(
-            "Новий рівень!",
-            f"Ви отримали новий рівень у '{skill_name}'!\n"
-            f"{old_lvl} ➜ {new_lvl}"
-        )
+        # ---- наше кастомне вікно замість messagebox ----
+        popup = ctk.CTkToplevel(self.root)
+        popup.title("Новий рівень!")
+        popup.grab_set()
+        popup.geometry("320x160")
+
+        frame = ctk.CTkFrame(popup, corner_radius=10)
+        frame.pack(fill="both", expand=True, padx=15, pady=15)
+
+        ctk.CTkLabel(
+            frame,
+            text="Новий рівень!",
+            font=("Segoe UI", 16, "bold")
+        ).pack(pady=(5, 2))
+
+        ctk.CTkLabel(
+            frame,
+            text=f"'{skill_name}'\n{old_lvl} ➜ {new_lvl}",
+            font=("Segoe UI", 13)
+        ).pack(pady=(0, 10))
+
+        ctk.CTkButton(
+            frame,
+            text="Ок",
+            width=80,
+            command=popup.destroy
+        ).pack(pady=(5, 0))
+
+        # ---- програємо твій звук ----
+        try:
+            if os.path.exists(LEVEL_UP_SOUND_PATH):
+                winsound.PlaySound(
+                    LEVEL_UP_SOUND_PATH,
+                    winsound.SND_FILENAME | winsound.SND_ASYNC
+                )
+        except Exception as e:
+            print("LEVEL UP: sound error:", repr(e))
 
     def update_cefr_for_skill(self, skill: dict):
         """Оновлює CEFR для мовної навички з комбобокса."""
@@ -237,7 +281,7 @@ class App:
         # ефект звуку (опційно)
         try:
             import winsound
-            winsound.PlaySound("lvlup.mp3", winsound.SND_FILENAME | winsound.SND_ASYNC)
+            winsound.PlaySound("lvlup.wav", winsound.SND_FILENAME | winsound.SND_ASYNC)
         except:
             pass
 
@@ -347,6 +391,14 @@ class App:
             text="Зберегти стан",
             command=self.handle_save
         ).pack(pady=(0, 15))
+
+        ctk.CTkButton(
+            right_frame,
+            text="Додати навичку",
+            width=140,
+            command=self.open_add_skill_dialog
+        ).pack(pady=(0, 10))
+
 
         # ---------- ЛІВО: СПИСОК НАВИЧОК ----------
         ctk.CTkLabel(
@@ -646,6 +698,70 @@ class App:
         # Перебудовуємо екран
         self.build_main_screen()
 
+    def open_add_skill_dialog(self):
+            """Вікно для створення нової навички."""
+            win = ctk.CTkToplevel(self.root)
+            win.title("Нова навичка")
+            win.grab_set()
+            win.geometry("360x200")
+
+            frame = ctk.CTkFrame(win, corner_radius=10)
+            frame.pack(fill="both", expand=True, padx=15, pady=15)
+
+            # Назва
+            ctk.CTkLabel(frame, text="Назва навички:").grid(row=0, column=0, sticky="w")
+            entry_name = ctk.CTkEntry(frame, width=200)
+            entry_name.grid(row=0, column=1, sticky="w", padx=(8, 0), pady=(0, 8))
+
+            # Тип
+            ctk.CTkLabel(frame, text="Тип:").grid(row=1, column=0, sticky="w")
+            type_var = ctk.StringVar(value="general")
+            combo_type = ctk.CTkComboBox(
+                frame,
+                variable=type_var,
+                values=["general", "language"],
+                width=120
+            )
+            combo_type.grid(row=1, column=1, sticky="w", padx=(8, 0), pady=(0, 8))
+
+            def on_save():
+                name = entry_name.get().strip()
+                if not name:
+                    messagebox.showerror("Помилка", "Назва навички не може бути порожня")
+                    return
+
+                skill_type = type_var.get()
+                new_id = f"skill_{int(time.time() * 1000)}"
+
+                # базова структура навички
+                skill = {
+                    "id": new_id,
+                    "name": name,
+                    "type": skill_type,
+                    "xp": 0,
+                    "daily_done": False,
+                    "tasks": []
+                }
+
+                # якщо мова — додаємо CEFR
+                if skill_type == "language":
+                    skill["cefr"] = "A0"
+                else:
+                    skill["cefr"] = ""
+
+                self.data.setdefault("skills", []).append(skill)
+                save_data(self.data)
+
+                win.destroy()
+                # оновлюємо головний екран, щоб новий скіл зʼявився
+                self.build_main_screen()
+
+            btn_save = ctk.CTkButton(frame, text="Зберегти", command=on_save)
+            btn_save.grid(row=2, column=0, columnspan=2, pady=(10, 0))
+
+            # трохи розтягування, щоб воно виглядало норм
+            for i in range(2):
+                frame.grid_columnconfigure(i, weight=1)
 
     def open_add_task_dialog(self, skill_id: str):
         """Невелике вікно для створення нової задачі (CustomTkinter)."""
