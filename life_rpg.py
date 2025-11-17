@@ -276,6 +276,137 @@ class App:
         # Побудова головного екрану
         self.build_main_screen()
 
+    def show_xp_gain_animation(self, skill: dict, xp_gained: int, old_xp: float, new_xp: float, old_lvl: int, new_lvl: int):
+        """Плаваючий попап з анімацією XP та мотиваційним повідомленням."""
+        # --- 1. Створення вікна ---
+        win = ctk.CTkToplevel(self.root)
+        win.title("XP Gained!")
+        win.attributes("-topmost", True)
+        win.geometry("400x180")
+        win.transient(self.root) # Зробить його залежним від головного вікна
+
+        win_width = 400
+        win_height = 180
+        # Розміщуємо по центру екрану
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        x = (screen_width // 2) - (win_width // 2)
+        y = (screen_height // 2) - (win_height // 2)
+        win.geometry(f"{win_width}x{win_height}+{x}+{y}")
+        
+        frame = ctk.CTkFrame(win, corner_radius=15)
+        frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        # --- 2. Текст та повідомлення ---
+        ctk.CTkLabel(
+            frame,
+            text=f"Навичка: {skill.get('name')}",
+            font=("Segoe UI", 13, "bold")
+        ).pack(pady=(0, 2))
+
+        ctk.CTkLabel(
+            frame,
+            text=f"+{xp_gained} XP",
+            font=("Segoe UI", 18, "bold"),
+            text_color="#eab308"
+        ).pack(pady=(0, 8))
+        
+        # --- 3. Розрахунок прогресу для анімації ---
+        
+        # Визначаємо XP-поріг поточного та наступного рівня
+        current_level_xp_threshold = level_to_xp(old_lvl)
+        next_level_xp_threshold = level_to_xp(old_lvl + 1)
+        
+        # Якщо вже був максимальний рівень або поточний рівень > нового, анімація не потрібна
+        if old_lvl >= 40 or next_level_xp_threshold <= current_level_xp_threshold:
+            start_progress = 1.0
+            end_progress = 1.0
+            
+            progress_msg = "Майстер! Максимальний XP."
+            progress_bar = ctk.CTkProgressBar(frame, height=12)
+            progress_bar.set(1.0) # Вже повний
+        else:
+            # Визначаємо початковий та кінцевий прогрес для анімації
+            # Початковий прогрес (до додавання XP)
+            start_progress = (old_xp - current_level_xp_threshold) / (next_level_xp_threshold - current_level_xp_threshold)
+            start_progress = max(0.0, min(1.0, start_progress))
+            
+            # Кінцевий прогрес (з доданим XP). Якщо XP виходить за рівень, обмежуємо 1.0
+            end_progress = (new_xp - current_level_xp_threshold) / (next_level_xp_threshold - current_level_xp_threshold)
+            end_progress = min(1.0, end_progress)
+
+            progress_msg = f"Рівень: {old_lvl} ➜ {new_lvl}"
+            
+            progress_bar = ctk.CTkProgressBar(frame, height=12)
+            progress_bar.set(start_progress) # Починаємо з поточного XP
+            progress_bar.pack(fill="x", padx=10, pady=(0, 8))
+
+        progress_bar.pack(fill="x", padx=10, pady=(0, 8))
+
+        # --- НОВЕ: ДЕТАЛІЗАЦІЯ XP ---
+        
+        current_total_xp = int(new_xp)
+        
+        # Розраховуємо XP до наступного рівня
+        if new_lvl >= 40: # Якщо досягнуто макс. рівня
+             xp_text = f"Загальний XP: {current_total_xp} / Макс. рівень! 🚀"
+             xp_color = "#eab308"
+        else:
+             next_level_xp_needed = level_to_xp(new_lvl + 1)
+             xp_remaining = next_level_xp_needed - new_xp
+             
+             # Формат: Поточний XP / XP для наступного рівня (Рівень X)
+             xp_text = f"XP зараз: {current_total_xp} / До {new_lvl + 1} ще {int(xp_remaining)} XP"
+             xp_color = "#99f6e4" # Світлий колір для контрасту
+             
+        ctk.CTkLabel(
+            frame,
+            text=xp_text,
+            font=("Segoe UI", 11, "bold"),
+            text_color=xp_color
+        ).pack(pady=(4, 0))
+
+        # Мотиваційне повідомлення
+        motivational_label = ctk.CTkLabel(
+            frame,
+            text="Молодець! Продовжуй в тому ж дусі! 💪",
+            font=("Segoe UI", 12),
+            text_color="#22c55e" 
+        )
+        motivational_label.pack(pady=(4, 0))
+
+
+        # ... (Код animate_bar та виклик animate_bar(0) залишаються без змін)
+        
+        # Мотиваційне повідомлення
+        motivational_label = ctk.CTkLabel(
+            frame,
+            text="Молодець! Продовжуй в тому ж дусі! 💪",
+            font=("Segoe UI", 12),
+            text_color="#22c55e" 
+        )
+        motivational_label.pack(pady=(4, 0))
+
+
+        # --- 4. Логіка анімації ---
+        ANIMATION_STEPS = 50 
+        ANIMATION_DURATION_MS = 1000 # 1 секунда
+        step_delay = ANIMATION_DURATION_MS // ANIMATION_STEPS
+        
+        def animate_bar(step):
+            if not win.winfo_exists(): # ДОДАТИ ЦЮ ПЕРЕВІРКУ
+                return
+            if step < ANIMATION_STEPS:
+                current_progress = start_progress + (end_progress - start_progress) * (step / ANIMATION_STEPS)
+                progress_bar.set(current_progress)
+                win.after(step_delay, lambda: animate_bar(step + 1))
+            else:
+                progress_bar.set(end_progress)
+                
+
+        # Стартуємо анімацію
+        animate_bar(0)
+
     def apply_task_template(self, choice: str, templates: list,
                             entry_name, combo_cat, entry_xp, entry_target):
         """Підставляє значення в поля вікна задачі за вибраним шаблоном."""
@@ -1046,7 +1177,7 @@ class App:
 
         lbl_lvl = ctk.CTkLabel(
             stats_frame,
-            text=f"Рівень: {lvl} ({title})   XP: {int(xp)}",
+            text=f"Рівень: {lvl} ({title})   XP: {int(xp)} / {int(next_level_xp)}" ,
             font=("Segoe UI", 14)
         )
         lbl_lvl.pack(anchor="w", padx=10, pady=(8, 0))
@@ -1345,8 +1476,8 @@ class App:
 
         save_data(self.data)
 
-        # Перебудовуємо екран
-        self.build_main_screen()
+        # ДОДАЄМО ВИКЛИК НОВОЇ ФУНКЦІЇ АНІМАЦІЇ ПЕРЕД ПЕРЕБУДОВОЮ ЕКРАНУ
+        self.show_xp_gain_animation(skill, xp_reward, old_xp, new_xp, old_lvl, new_lvl)
 
     def open_add_skill_dialog(self):
             """Вікно для створення нової навички."""
