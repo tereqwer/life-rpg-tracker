@@ -13,7 +13,7 @@
       "id": "english",
       "name": "Англійська",
       "type": "language",
-      "xp": 554,
+      "xp": 704,
       "daily_done": true,
       "tasks": [
         {
@@ -23,10 +23,82 @@
           "xp_reward": 50,
           "money_usdt": 0.0,
           "money_uah": 0.0,
-          "completed": false,
+          "completed": true,
           "target_value": 111.0,
           "current_value": 12.0,
           "time_spent": 10
+        },
+        {
+          "id": "task_1763369679961",
+          "name": "fasda",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": true,
+          "target_value": 0.0,
+          "current_value": 0.0,
+          "time_spent": 0
+        },
+        {
+          "id": "task_1763370618985",
+          "name": "TestShort",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": true,
+          "target_value": 0.0,
+          "current_value": 0.0,
+          "time_spent": 0
+        },
+        {
+          "id": "task_1763370623447",
+          "name": "TestMed",
+          "category": "medium",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false,
+          "target_value": 0.0,
+          "current_value": 0.0,
+          "time_spent": 0
+        },
+        {
+          "id": "task_1763370841034",
+          "name": "фівфі",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false,
+          "target_value": 0.0,
+          "current_value": 0.0,
+          "time_spent": 0
+        },
+        {
+          "id": "task_1763370842828",
+          "name": "півапіп",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false,
+          "target_value": 0.0,
+          "current_value": 0.0,
+          "time_spent": 0
+        },
+        {
+          "id": "task_1763370856404",
+          "name": "фіафіа",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false,
+          "target_value": 0.0,
+          "current_value": 0.0,
+          "time_spent": 0
         }
       ],
       "cefr": "A0"
@@ -36,8 +108,21 @@
       "name": "Французька",
       "type": "language",
       "xp": 0,
-      "daily_done": true,
-      "tasks": [],
+      "daily_done": false,
+      "tasks": [
+        {
+          "id": "task_1763370850439",
+          "name": "ауца",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "completed": false,
+          "target_value": 0.0,
+          "current_value": 0.0,
+          "time_spent": 0
+        }
+      ],
       "cefr": "A0"
     },
     {
@@ -78,5 +163,5 @@
     }
   ],
   "global_tasks": [],
-  "last_daily_reset": "2025-11-16"
+  "last_daily_reset": "2025-11-17"
 }
