@@ -9,6 +9,7 @@ from datetime import date
 import time
 import tkinter.font as tkfont
 import uuid
+import pyperclip
 
 TASK_TEMPLATES = {
     "language": [
@@ -254,8 +255,6 @@ def save_data(data: dict) -> None:
 class App:
     def __init__(self, root: ctk.CTk):
         self.hero_image = None  # щоб картинку не зʼїв GC
-        self.font_task = tkfont.Font(family="Segoe UI", size=9)
-        self.font_task_completed = tkfont.Font(family="Segoe UI", size=9, overstrike=1)
         self.root = root
         self.root.geometry("1200x980")
 
@@ -407,6 +406,17 @@ class App:
         # Стартуємо анімацію
         animate_bar(0)
 
+    def copy_to_clipboard(self, text_to_copy: str):
+        """Копіює вказаний текст у буфер обміну та показує повідомлення."""
+        try:
+            pyperclip.copy(text_to_copy)
+            # Можна використати тимчасовий CTkLabel у вікні або messagebox, але messagebox простіше:
+            messagebox.showinfo("Скопійовано", f"ID скопійовано: {text_to_copy}")
+        except pyperclip.PyperclipException:
+            messagebox.showerror("Помилка", "Не вдалося отримати доступ до буфера обміну.")
+        except Exception as e:
+            print(f"Помилка копіювання: {e}")
+
     def _create_subtask_checklist(self, parent_frame, skill_id: str, parent_task: dict):
         """Рендерить неактивний список підзадач під батьківською задачею."""
         
@@ -434,12 +444,10 @@ class App:
             
             # Створюємо кастомний шрифт для закреслення
             if is_completed:
-                # Використовуємо self.font_task_completed, який ви вже визначили
-                task_font = self.font_task_completed 
+                text_color = "#6b7280"
                 prefix = "✅ "
             else:
-                # Використовуємо self.font_task
-                task_font = self.font_task
+                text_color = "#9ca3af"
                 prefix = "• "
 
             # Рядок підзадачі
@@ -449,7 +457,7 @@ class App:
             ctk.CTkLabel(
                 sub_row,
                 text=prefix + sub_task.get("name", "Невідома підзадача"),
-                font=task_font,
+                font=("Segoe UI", 9),
                 text_color=text_color
             ).pack(anchor="w")
 
@@ -1019,7 +1027,7 @@ class App:
         win = ctk.CTkToplevel(self.root)
         win.title("Редагувати задачу")
         win.grab_set()
-        win.geometry("380x340")
+        win.geometry("480x440")
 
         frame = ctk.CTkFrame(win, corner_radius=10)
         frame.pack(fill="both", expand=True, padx=15, pady=15)
@@ -1429,19 +1437,34 @@ class App:
             text_color=reward_color
         )
         lbl_rewards.pack(anchor="w", pady=(2, 0))
-
-        lbl_rewards.pack(anchor="w", pady=(2, 0))
         
         # -----------------------------
-        # ДОДАНО: ВІДОБРАЖЕННЯ ID ЗАДАЧІ
+        # ДОДАНО: ID ТА КНОПКА КОПІЮВАННЯ
         # -----------------------------
         task_id = task.get("id", "ID відсутній")
+        
+        # Створюємо фрейм для вирівнювання ID та кнопки
+        id_row_frame = ctk.CTkFrame(left, fg_color="transparent")
+        id_row_frame.pack(anchor="w", pady=(0, 2))
+
+        # Мітка з ID
         ctk.CTkLabel(
-            left,
+            id_row_frame,
             text=f"ID: {task_id}",
-            font=("Segoe UI", 8), # Маленький шрифт
-            text_color="#6b7280" # Сірий колір, щоб не відволікати
-        ).pack(anchor="w", pady=(0, 2))
+            font=("Segoe UI", 8),
+            text_color="#6b7280"
+        ).pack(side="left")
+        
+        # Кнопка "Копіювати"
+        ctk.CTkButton(
+            id_row_frame,
+            text="Копіювати",
+            width=60, 
+            height=15,
+            font=("Segoe UI", 8),
+            fg_color="#3b82f6", # Синій колір
+            command=lambda tid=task_id: self.copy_to_clipboard(tid)
+        ).pack(side="left", padx=(10, 0))
         # -----------------------------
 
         # --- Прогрес-бар по задачі (якщо задана ціль) ---

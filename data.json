@@ -13,8 +13,8 @@
       "id": "english",
       "name": "Англійська",
       "type": "language",
-      "xp": 2084,
-      "daily_done": false,
+      "xp": 2304,
+      "daily_done": true,
       "tasks": [
         {
           "id": "88dbf4a8-bd7d-43a1-b9b2-53ac253f8e34",
@@ -26,7 +26,7 @@
           "target_value": 20.0,
           "current_value": 0.0,
           "time_spent": 0,
-          "completed": false
+          "completed": true
         },
         {
           "id": "0d546e82-aa1e-4363-bf41-313368cbcc81",
@@ -38,7 +38,7 @@
           "target_value": 10.0,
           "current_value": 0.0,
           "time_spent": 0,
-          "completed": false
+          "completed": true
         },
         {
           "id": "1aa24abb-1846-43de-adbb-4e4e5663b080",
@@ -50,7 +50,49 @@
           "target_value": 20.0,
           "current_value": 0.0,
           "time_spent": 0,
+          "completed": true,
+          "required_subtasks_ids": [
+            "88dbf4a8-bd7d-43a1-b9b2-53ac253f8e34"
+          ]
+        },
+        {
+          "id": "d383ae48-6791-4b6f-a4cd-874d0ad448d3",
+          "name": "2",
+          "category": "medium",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "target_value": 0.0,
+          "current_value": 0.0,
+          "time_spent": 0,
+          "completed": false,
+          "required_subtasks_ids": [
+            "07f154c4-966d-4706-95e6-d75d0d17775d"
+          ]
+        },
+        {
+          "id": "79045468-d9bd-4e9d-8fd3-8df52d6aca0a",
+          "name": "20 нових/повторити слова",
+          "category": "medium",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "target_value": 20.0,
+          "current_value": 0.0,
+          "time_spent": 0,
           "completed": false
+        },
+        {
+          "id": "07f154c4-966d-4706-95e6-d75d0d17775d",
+          "name": "Shadowing 10 хв",
+          "category": "short",
+          "xp_reward": 60,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "target_value": 10.0,
+          "current_value": 0.0,
+          "time_spent": 0,
+          "completed": true
         }
       ],
       "cefr": "A0"
