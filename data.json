@@ -13,116 +13,44 @@
       "id": "english",
       "name": "Англійська",
       "type": "language",
-      "xp": 1984,
-      "daily_done": true,
+      "xp": 2084,
+      "daily_done": false,
       "tasks": [
         {
-          "id": "task_1763370623447",
-          "name": "TestMed",
+          "id": "88dbf4a8-bd7d-43a1-b9b2-53ac253f8e34",
+          "name": "Урок англійської 20 хв",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "target_value": 20.0,
+          "current_value": 0.0,
+          "time_spent": 0,
+          "completed": false
+        },
+        {
+          "id": "0d546e82-aa1e-4363-bf41-313368cbcc81",
+          "name": "Shadowing 10 хв",
+          "category": "short",
+          "xp_reward": 60,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "target_value": 10.0,
+          "current_value": 0.0,
+          "time_spent": 0,
+          "completed": false
+        },
+        {
+          "id": "1aa24abb-1846-43de-adbb-4e4e5663b080",
+          "name": "1",
           "category": "medium",
           "xp_reward": 50,
           "money_usdt": 0.0,
           "money_uah": 0.0,
-          "completed": true,
-          "target_value": 0.0,
-          "current_value": 0.0,
-          "time_spent": 0
-        },
-        {
-          "id": "ce7f70c7-0685-459f-88cb-5806131d55c3",
-          "name": "Shadowing 10 хв",
-          "category": "short",
-          "xp_reward": 60,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
-          "target_value": 10.0,
-          "current_value": 0.0,
-          "time_spent": 0,
-          "completed": true
-        },
-        {
-          "id": "1f1c6915-59c2-42f7-97b3-c563e8719be2",
-          "name": "Shadowing 10 хв",
-          "category": "short",
-          "xp_reward": 60,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
-          "target_value": 10.0,
-          "current_value": 0.0,
-          "time_spent": 0,
-          "completed": true
-        },
-        {
-          "id": "0a61bf31-706c-4538-a678-aae3565ec5be",
-          "name": "Shadowing 10 хв",
-          "category": "short",
-          "xp_reward": 60,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
-          "target_value": 10.0,
-          "current_value": 0.0,
-          "time_spent": 0,
-          "completed": true
-        },
-        {
-          "id": "830af8ca-697a-4fd5-b723-3533cdc809eb",
-          "name": "20 нових/повторити слова",
-          "category": "short",
-          "xp_reward": 50,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
           "target_value": 20.0,
           "current_value": 0.0,
           "time_spent": 0,
-          "completed": true
-        },
-        {
-          "id": "d963f39c-6379-4c6f-b60a-f95849112de3",
-          "name": "20 нових/повторити слова",
-          "category": "short",
-          "xp_reward": 520,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
-          "target_value": 20.0,
-          "current_value": 0.0,
-          "time_spent": 0,
-          "completed": true
-        },
-        {
-          "id": "586a4b0d-7177-4673-bcae-549e797f3b4c",
-          "name": "Shadowing 10 хв",
-          "category": "short",
-          "xp_reward": 60,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
-          "target_value": 10.0,
-          "current_value": 0.0,
-          "time_spent": 0,
-          "completed": true
-        },
-        {
-          "id": "e6a86400-1219-4480-a2ac-e772f27d4cb1",
-          "name": "Shadowing 10 хв",
-          "category": "short",
-          "xp_reward": 60,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
-          "target_value": 10.0,
-          "current_value": 0.0,
-          "time_spent": 0,
-          "completed": true
-        },
-        {
-          "id": "e94324aa-2f54-46b1-8afc-5a3a166a394a",
-          "name": "20 нових/повторити слова",
-          "category": "short",
-          "xp_reward": 50,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
-          "target_value": 20.0,
-          "current_value": 0.0,
-          "time_spent": 0,
-          "completed": true
+          "completed": false
         }
       ],
       "cefr": "A0"
@@ -132,21 +60,8 @@
       "name": "Французька",
       "type": "language",
       "xp": 50,
-      "daily_done": true,
-      "tasks": [
-        {
-          "id": "task_1763370850439",
-          "name": "ауца",
-          "category": "short",
-          "xp_reward": 50,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
-          "completed": true,
-          "target_value": 0.0,
-          "current_value": 0.0,
-          "time_spent": 0
-        }
-      ],
+      "daily_done": false,
+      "tasks": [],
       "cefr": "A0"
     },
     {
@@ -187,5 +102,5 @@
     }
   ],
   "global_tasks": [],
-  "last_daily_reset": "2025-11-17"
+  "last_daily_reset": "2025-11-19"
 }

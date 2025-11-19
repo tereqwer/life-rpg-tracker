@@ -407,6 +407,52 @@ class App:
         # Стартуємо анімацію
         animate_bar(0)
 
+    def _create_subtask_checklist(self, parent_frame, skill_id: str, parent_task: dict):
+        """Рендерить неактивний список підзадач під батьківською задачею."""
+        
+        subtask_ids = parent_task.get("required_subtasks_ids", [])
+        if not subtask_ids:
+            return
+
+        # Збираємо всі активні задачі навички для швидкого пошуку
+        all_tasks = {t['id']: t for t in next((s for s in self.data.get('skills', []) if s.get('id') == skill_id), {}).get('tasks', [])}
+
+        # Фрейм для списку підзадач (з відступом для візуального підпорядкування)
+        list_frame = ctk.CTkFrame(parent_frame, fg_color="transparent")
+        list_frame.pack(fill="x", padx=(20, 0), pady=(4, 0)) 
+        
+        # Відображення кожної підзадачі
+        for sub_id in subtask_ids:
+            sub_task = all_tasks.get(sub_id)
+            if not sub_task:
+                continue # Пропускаємо, якщо задача з цим ID не знайдена
+
+            is_completed = sub_task.get("completed", False)
+            
+            # Визначаємо стиль: сірий колір та закреслення
+            text_color = "#6b7280" # Темно-сірий колір
+            
+            # Створюємо кастомний шрифт для закреслення
+            if is_completed:
+                # Використовуємо self.font_task_completed, який ви вже визначили
+                task_font = self.font_task_completed 
+                prefix = "✅ "
+            else:
+                # Використовуємо self.font_task
+                task_font = self.font_task
+                prefix = "• "
+
+            # Рядок підзадачі
+            sub_row = ctk.CTkFrame(list_frame, fg_color="transparent")
+            sub_row.pack(fill="x", pady=(1, 1))
+
+            ctk.CTkLabel(
+                sub_row,
+                text=prefix + sub_task.get("name", "Невідома підзадача"),
+                font=task_font,
+                text_color=text_color
+            ).pack(anchor="w")
+
     def apply_task_template(self, choice: str, templates: list,
                             entry_name, combo_cat, entry_xp, entry_target):
         """Підставляє значення в поля вікна задачі за вибраним шаблоном."""
@@ -451,6 +497,7 @@ class App:
 
         # базові значення
         base_seconds = int(task.get("time_spent", 0))
+        
 
         win = ctk.CTkToplevel(self.root)
         win.title("Таймер задачі")
@@ -1024,6 +1071,14 @@ class App:
         entry_current.grid(row=6, column=1, sticky="w", padx=(8, 0), pady=(0, 10))
         entry_current.insert(0, str(task.get("current_value", 0)))
 
+        # Зчитуємо поточні ID, з'єднуючи їх комою для відображення
+        current_sub_ids = ", ".join(task.get("required_subtasks_ids", []))
+
+        ctk.CTkLabel(frame, text="ID Підзадач:").grid(row=7, column=0, sticky="w")
+        entry_subtask_ids = ctk.CTkEntry(frame, width=220)
+        entry_subtask_ids.grid(row=7, column=1, sticky="w", padx=(8, 0), pady=(0, 10))
+        entry_subtask_ids.insert(0, current_sub_ids)
+
         # (опціонально) можна показати скільки часу вже витрачено
         time_spent = int(task.get("time_spent", 0))
         if time_spent > 0:
@@ -1035,7 +1090,7 @@ class App:
                 text=f"Час на задачі: {h:02d}:{m:02d}:{s:02d}",
                 font=("Segoe UI", 10),
                 text_color="#9ca3af"
-            ).grid(row=7, column=0, columnspan=2, pady=(0, 6))
+            ).grid(row=8, column=0, columnspan=2, pady=(0, 6))
 
         def on_save():
             name = entry_name.get().strip()
@@ -1071,6 +1126,20 @@ class App:
                 current_val = float(entry_current.get())
             except ValueError:
                 current_val = 0.0
+
+            # -----------------------------
+            # ДОДАНО: ЗБЕРЕЖЕННЯ ID ПІДЗАДАЧ
+            # -----------------------------
+            subtask_input = entry_subtask_ids.get()
+            if subtask_input:
+                # Розділяємо рядок за пробілами (включаючи множинні пробіли та переноси)
+                sub_ids_list = [
+                     id.strip() for id in subtask_input.split() if id.strip()
+                ]
+                task["required_subtasks_ids"] = sub_ids_list
+            elif "required_subtasks_ids" in task:
+                # Якщо поле порожнє, але поле було в задачі, видаляємо його
+                del task["required_subtasks_ids"]
 
             # оновлюємо задачу
             task["name"] = name
@@ -1361,6 +1430,20 @@ class App:
         )
         lbl_rewards.pack(anchor="w", pady=(2, 0))
 
+        lbl_rewards.pack(anchor="w", pady=(2, 0))
+        
+        # -----------------------------
+        # ДОДАНО: ВІДОБРАЖЕННЯ ID ЗАДАЧІ
+        # -----------------------------
+        task_id = task.get("id", "ID відсутній")
+        ctk.CTkLabel(
+            left,
+            text=f"ID: {task_id}",
+            font=("Segoe UI", 8), # Маленький шрифт
+            text_color="#6b7280" # Сірий колір, щоб не відволікати
+        ).pack(anchor="w", pady=(0, 2))
+        # -----------------------------
+
         # --- Прогрес-бар по задачі (якщо задана ціль) ---
         target_val = task.get("target_value", 0)
         current_val = task.get("current_value", 0)
@@ -1391,6 +1474,17 @@ class App:
             command=lambda s_id=skill_id, t_id=task.get("id"): self.execute_task(s_id, t_id)
         )
         btn_do.pack(side="top", pady=(0, 2))
+
+        is_parent = "required_subtasks_ids" in task
+        
+        # Якщо це батьківська задача, і вона не виконана, показуємо чек-лист
+        if is_parent and not completed:
+            
+            # Ваш код відображення прогрес-бару та блокування кнопки має бути тут...
+            # ...
+            
+            # Викликаємо функцію для відображення неактивних підзадач
+            self._create_subtask_checklist(parent, skill_id, task)
 
         # Таймер тільки для коротких задач
         if task.get("category") == "short":
