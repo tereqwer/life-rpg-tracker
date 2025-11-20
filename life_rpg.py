@@ -6,7 +6,7 @@ import customtkinter as ctk
 from tkinter import messagebox
 from PIL import Image, ImageTk
 from datetime import date
-import time
+import time, datetime
 import tkinter.font as tkfont
 import uuid
 import pyperclip
@@ -275,17 +275,17 @@ class App:
         # Побудова головного екрану
         self.build_main_screen()
 
-    def show_xp_gain_animation(self, skill: dict, xp_gained: int, old_xp: float, new_xp: float, old_lvl: int, new_lvl: int):
+    def show_xp_gain_animation(self, skill_id: str, skill: dict, xp_gained: int, old_xp: float, new_xp: float, old_lvl: int, new_lvl: int):
         """Плаваючий попап з анімацією XP та мотиваційним повідомленням."""
         # --- 1. Створення вікна ---
         win = ctk.CTkToplevel(self.root)
         win.title("XP Gained!")
         win.attributes("-topmost", True)
-        win.geometry("400x180")
+        win.geometry("500x300")
         win.transient(self.root) # Зробить його залежним від головного вікна
 
-        win_width = 400
-        win_height = 180
+        win_width = 500
+        win_height = 300
         # Розміщуємо по центру екрану
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
@@ -365,16 +365,6 @@ class App:
             text_color=xp_color
         ).pack(pady=(4, 0))
 
-        # Мотиваційне повідомлення
-        motivational_label = ctk.CTkLabel(
-            frame,
-            text="Молодець! Продовжуй в тому ж дусі! 💪",
-            font=("Segoe UI", 12),
-            text_color="#22c55e" 
-        )
-        motivational_label.pack(pady=(4, 0))
-
-
         # ... (Код animate_bar та виклик animate_bar(0) залишаються без змін)
         
         # Мотиваційне повідомлення
@@ -386,7 +376,27 @@ class App:
         )
         motivational_label.pack(pady=(4, 0))
 
+        btn_ok = ctk.CTkButton(
+                    win, 
+                    text="Зрозуміло", 
+                    # При натисканні: викликаємо функцію, яка оновить екран і закриє вікно
+                    command=lambda: on_ok_clicked(skill_id), 
+                    width=100
+                )
+        btn_ok.pack(pady=(10, 15))
 
+        def on_ok_clicked(skill_id_to_update):
+            """Викликається кнопкою "ОК". Оновлює екран та закриває вікно анімації."""
+            
+            # Оновлюємо екрани тут, коли користувач готовий
+            self.build_main_screen() 
+            self.build_skill_screen(skill_id_to_update) 
+            
+            # Закриваємо вікно (win має бути доступний у цій локальній області видимості)
+            win.destroy()
+
+            
+            
         # --- 4. Логіка анімації ---
         ANIMATION_STEPS = 50 
         ANIMATION_DURATION_MS = 1000 # 1 секунда
@@ -400,8 +410,10 @@ class App:
                 progress_bar.set(current_progress)
                 win.after(step_delay, lambda: animate_bar(step + 1))
             else:
-                progress_bar.set(end_progress)
                 
+                progress_bar.set(end_progress)
+            
+
 
         # Стартуємо анімацію
         animate_bar(0)
@@ -1267,6 +1279,18 @@ class App:
             text_color=lvl_color
         ).pack(anchor="w", padx=10, pady=(0, 4))
 
+        # -----------------------------
+        # ДОДАНО: ВІДОБРАЖЕННЯ STREAK
+        # -----------------------------
+        current_streak = skill.get("current_streak", 0)
+        
+        ctk.CTkLabel(
+            stats_frame, # <--- ТУТ ТРЕБА ВИКОРИСТОВУВАТИ stats_frame
+            text=f"🔥 Серія (Streak): {current_streak} днів",
+            font=("Segoe UI", 10, "bold"),
+            text_color="#f59e0b" # Помаранчевий колір для "вогню"
+        ).pack(pady=(5, 5), anchor="w", padx=(10, 0))
+        # -----------------------------
 
         # CEFR для мов
         is_language = skill.get("type") == "language"
@@ -1498,6 +1522,11 @@ class App:
         )
         btn_do.pack(side="top", pady=(0, 2))
 
+        if completed:
+            btn_do.configure(state="disabled", text="Виконано")
+
+        btn_do.pack(side="right", padx=(0, 10))
+
         is_parent = "required_subtasks_ids" in task
         
         # Якщо це батьківська задача, і вона не виконана, показуємо чек-лист
@@ -1518,6 +1547,12 @@ class App:
                 fg_color="#22c55e",
                 command=lambda s=skill_id, t=task.get("id"): self.start_task_timer(s, t)
             )
+            btn_timer.pack(side="top", pady=(3, 0))
+
+            if completed:
+                btn_timer.configure(state="disabled", text="Виконано")
+            # -----------------------------
+            
             btn_timer.pack(side="top", pady=(3, 0))
 
         # маленькі кнопки редагувати / видалити
@@ -1545,6 +1580,13 @@ class App:
 
     def execute_task(self, skill_id: str, task_id: str):
         """Виконати задачу — додати XP, гроші, позначити completed."""
+
+        # ДОДАНО: СЬОГОДНІШНЯ ДАТА (ДЛЯ STREAK)
+        # -----------------------------
+        today = datetime.date.today()
+        today_str = today.isoformat() # Формат YYYY-MM-DD
+        # -----------------------------
+
         # знаходимо навичку
         skill = next((s for s in self.data.get("skills", []) if s["id"] == skill_id), None)
         if not skill:
@@ -1591,10 +1633,35 @@ class App:
         task["completed"] = True
         skill["daily_done"] = True
 
+        # -----------------------------
+        # ЛОГІКА РОЗРАХУНКУ STREAK
+        # -----------------------------
+        last_date_str = skill.get("last_completed_date")
+        current_streak = skill.get("current_streak", 0)
+
+        # 1. Якщо це перше виконання
+        if not last_date_str:
+            skill["current_streak"] = 1
+        else:
+            last_date = datetime.date.fromisoformat(last_date_str)
+            delta = today - last_date
+
+            if delta.days == 1:
+                # 2. Якщо виконання було вчора - збільшуємо лічильник
+                skill["current_streak"] = current_streak + 1
+            elif delta.days > 1:
+                # 3. Якщо перерва більше доби - скидаємо
+                skill["current_streak"] = 1 # Або 0, якщо не виконано сьогодні
+            # Якщо delta.days == 0 (виконано сьогодні раніше) - лічильник не змінюється
+
+        # Оновлюємо дату останнього виконання
+        skill["last_completed_date"] = today_str
+        # -----------------------------
+
         save_data(self.data)
 
         # ДОДАЄМО ВИКЛИК НОВОЇ ФУНКЦІЇ АНІМАЦІЇ ПЕРЕД ПЕРЕБУДОВОЮ ЕКРАНУ
-        self.show_xp_gain_animation(skill, xp_reward, old_xp, new_xp, old_lvl, new_lvl)
+        self.show_xp_gain_animation(skill_id, skill, xp_reward, old_xp, new_xp, old_lvl, new_lvl)
 
     def open_add_skill_dialog(self):
             """Вікно для створення нової навички."""
@@ -1942,6 +2009,7 @@ class App:
 
 
 if __name__ == "__main__":
+    
     ctk.set_appearance_mode("dark")         # "dark" / "light" / "system"
     ctk.set_default_color_theme("dark-blue")  # або "green", "blue", "dark-blue"
 

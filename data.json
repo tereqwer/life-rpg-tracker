@@ -13,23 +13,11 @@
       "id": "english",
       "name": "Англійська",
       "type": "language",
-      "xp": 2304,
+      "xp": 8325,
       "daily_done": true,
       "tasks": [
         {
-          "id": "88dbf4a8-bd7d-43a1-b9b2-53ac253f8e34",
-          "name": "Урок англійської 20 хв",
-          "category": "short",
-          "xp_reward": 50,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
-          "target_value": 20.0,
-          "current_value": 0.0,
-          "time_spent": 0,
-          "completed": true
-        },
-        {
-          "id": "0d546e82-aa1e-4363-bf41-313368cbcc81",
+          "id": "0caee920-ca48-46a3-8c27-b5af71b416e7",
           "name": "Shadowing 10 хв",
           "category": "short",
           "xp_reward": 60,
@@ -41,61 +29,81 @@
           "completed": true
         },
         {
-          "id": "1aa24abb-1846-43de-adbb-4e4e5663b080",
-          "name": "1",
-          "category": "medium",
-          "xp_reward": 50,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
-          "target_value": 20.0,
-          "current_value": 0.0,
-          "time_spent": 0,
-          "completed": true,
-          "required_subtasks_ids": [
-            "88dbf4a8-bd7d-43a1-b9b2-53ac253f8e34"
-          ]
-        },
-        {
-          "id": "d383ae48-6791-4b6f-a4cd-874d0ad448d3",
-          "name": "2",
-          "category": "medium",
-          "xp_reward": 50,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
-          "target_value": 0.0,
-          "current_value": 0.0,
-          "time_spent": 0,
-          "completed": false,
-          "required_subtasks_ids": [
-            "07f154c4-966d-4706-95e6-d75d0d17775d"
-          ]
-        },
-        {
-          "id": "79045468-d9bd-4e9d-8fd3-8df52d6aca0a",
+          "id": "a4dc4944-52f9-4fa1-acd8-46e3f026d079",
           "name": "20 нових/повторити слова",
-          "category": "medium",
+          "category": "short",
           "xp_reward": 50,
           "money_usdt": 0.0,
           "money_uah": 0.0,
           "target_value": 20.0,
           "current_value": 0.0,
           "time_spent": 0,
-          "completed": false
+          "completed": true
         },
         {
-          "id": "07f154c4-966d-4706-95e6-d75d0d17775d",
-          "name": "Shadowing 10 хв",
+          "id": "04b12353-e9f3-4a49-9c2b-5801e5b75a48",
+          "name": "Абзац щоденника англійською",
           "category": "short",
-          "xp_reward": 60,
+          "xp_reward": 40,
           "money_usdt": 0.0,
           "money_uah": 0.0,
-          "target_value": 10.0,
+          "target_value": 1.0,
+          "current_value": 0.0,
+          "time_spent": 0,
+          "completed": true
+        },
+        {
+          "id": "3bdd008a-7396-4fdb-8705-128dcccbad7c",
+          "name": "Абзац щоденника англійською",
+          "category": "short",
+          "xp_reward": 40,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "target_value": 1.0,
+          "current_value": 0.0,
+          "time_spent": 0,
+          "completed": true
+        },
+        {
+          "id": "4c736090-57dc-42b9-9f68-efec54a2d79e",
+          "name": "20 нових/повторити слова",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "target_value": 20.0,
+          "current_value": 0.0,
+          "time_spent": 0,
+          "completed": true
+        },
+        {
+          "id": "ff01d61a-e6d4-4668-9972-3f709aad9724",
+          "name": "20 нових/повторити слова",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "target_value": 20.0,
+          "current_value": 0.0,
+          "time_spent": 0,
+          "completed": true
+        },
+        {
+          "id": "2924397b-163e-4035-9d1f-6096f56305db",
+          "name": "Абзац щоденника англійською",
+          "category": "short",
+          "xp_reward": 40,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "target_value": 1.0,
           "current_value": 0.0,
           "time_spent": 0,
           "completed": true
         }
       ],
-      "cefr": "A0"
+      "cefr": "A0",
+      "current_streak": 1,
+      "last_completed_date": "2025-11-20"
     },
     {
       "id": "french",
@@ -144,5 +152,5 @@
     }
   ],
   "global_tasks": [],
-  "last_daily_reset": "2025-11-19"
+  "last_daily_reset": "2025-11-20"
 }
