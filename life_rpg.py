@@ -687,19 +687,37 @@ class App:
 
     # ---------- UI: головний екран ----------
     def ensure_daily_reset(self):
-            """Якщо сьогодні новий день — скидаємо daily_done для всіх навичок."""
-            today = date.today().isoformat()
-            last = self.data.get("last_daily_reset")
+        """Якщо сьогодні новий день — скидаємо daily_done і статус completed для багаторазових задач."""
+        from datetime import date # Переконайтеся, що date імпортовано
+        
+        today = date.today().isoformat()
+        last = self.data.get("last_daily_reset")
 
-            if last != today:
-            # новий день — скидаємо daily_done і очищаємо виконані задачі
-                for skill in self.data.get("skills", []):
-                    skill["daily_done"] = False
-                    tasks = skill.get("tasks", [])
-                    # залишаємо тільки невиконані
-                    skill["tasks"] = [t for t in tasks if not t.get("completed")]
-                self.data["last_daily_reset"] = today
-                save_data(self.data)
+        if last != today:
+            # новий день — скидаємо daily_done і очищаємо виконані задачі (SOFT RESET)
+            for skill in self.data.get("skills", []):
+                skill["daily_done"] = False
+                tasks = skill.get("tasks", [])
+                
+                # --------------------------------
+                # НОВА ЛОГІКА: Скидаємо статус Completed
+                # --------------------------------
+                for task in tasks:
+                    # Перевіряємо, чи задача була виконана
+                    if task.get("completed", False):
+                        # Скидаємо статус, щоб задача знову з'явилася
+                        task["completed"] = False
+                        # Скидаємо прогрес, щоб можна було робити її знову
+                        task["current_value"] = 0.0
+                        task["time_spent"] = 0
+                        task.pop("completed_date", None) # Очищаємо дату виконання
+                
+                # !!! ВИДАЛІТЬ (або закоментуйте) ЦЕЙ РЯДОК !!!
+                # skill["tasks"] = [t for t in tasks if not t.get("completed")]
+                # --------------------------------
+                
+            self.data["last_daily_reset"] = today
+            save_data(self.data)
 
     def build_quests_screen(self):
         """Екран з усіма квестами по всіх навичках."""
@@ -1653,8 +1671,28 @@ class App:
         # Оновлюємо дату останнього виконання
         skill["last_completed_date"] = today_str
         # -----------------------------
+        
+        # ... (Після нарахування XP, грошей, та task["completed"] = True) ...
+        
+        # -----------------------------
+        # ДОДАНО: ЗБЕРЕЖЕННЯ ІСТОРІЇ ВИКОНАННЯ
+        # -----------------------------
+        if "task_history" not in self.data:
+            self.data["task_history"] = []
+            
+        completion_record = {
+            "task_name": task.get("name"),
+            "skill_name": skill.get("name"),
+            "xp_gained": xp_reward,
+            "date": datetime.date.today().isoformat(),
+            # Додайте будь-які інші поля, які ви хочете зберегти назавжди (час, гроші тощо)
+        }
+
+        self.data["task_history"].append(completion_record)
+        # -----------------------------
 
         save_data(self.data)
+        # ...
 
         # ДОДАЄМО ВИКЛИК НОВОЇ ФУНКЦІЇ АНІМАЦІЇ ПЕРЕД ПЕРЕБУДОВОЮ ЕКРАНУ
         self.show_xp_gain_animation(skill_id, skill, xp_reward, old_xp, new_xp, old_lvl, new_lvl)

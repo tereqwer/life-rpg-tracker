@@ -13,37 +13,49 @@
       "id": "english",
       "name": "Англійська",
       "type": "language",
-      "xp": 14999,
+      "xp": 15049,
       "daily_done": true,
       "tasks": [
         {
-          "id": "a774128e-72e3-49da-88f3-8de4bdda59b3",
-          "name": "Shadowing 10 хв",
-          "category": "short",
-          "xp_reward": 6012,
+          "id": "4684edfe-a72d-433b-acc0-cdd785909f3e",
+          "name": "Здати на б2",
+          "category": "long",
+          "xp_reward": 40,
           "money_usdt": 0.0,
           "money_uah": 0.0,
-          "target_value": 10.0,
+          "target_value": 1.0,
           "current_value": 0.0,
           "time_spent": 0,
-          "completed": true
+          "completed": false
         },
         {
-          "id": "487a522f-c995-4de4-b049-48c2e3f6ba52",
-          "name": "Shadowing 10 хв",
-          "category": "short",
-          "xp_reward": 60,
+          "id": "a89a0d0a-45c8-4c9d-869b-c01b8082d3e7",
+          "name": "твір на 2 сторінки",
+          "category": "medium",
+          "xp_reward": 50,
           "money_usdt": 0.0,
           "money_uah": 0.0,
-          "target_value": 10.0,
+          "target_value": 0.0,
+          "current_value": 0.0,
+          "time_spent": 0,
+          "completed": false
+        },
+        {
+          "id": "95aed155-b154-4ec5-a984-7e36bf6b1126",
+          "name": "Урок англійської 20 хв",
+          "category": "short",
+          "xp_reward": 50,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "target_value": 20.0,
           "current_value": 0.0,
           "time_spent": 0,
           "completed": true
         }
       ],
       "cefr": "A0",
-      "current_streak": 1,
-      "last_completed_date": "2025-11-23"
+      "current_streak": 2,
+      "last_completed_date": "2025-11-24"
     },
     {
       "id": "french",
@@ -92,5 +104,5 @@
     }
   ],
   "global_tasks": [],
-  "last_daily_reset": "2025-11-23"
+  "last_daily_reset": "2025-11-24"
 }
