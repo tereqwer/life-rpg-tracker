@@ -1205,10 +1205,6 @@ class App:
         tasks.remove(task)
         save_data(self.data)
 
-        # якщо після видалення в скіла немає невиконаних задач — daily_done можна скинути
-        if not any(not t.get("completed") for t in tasks):
-            skill["daily_done"] = False
-
         # оновлюємо екран навички
         self.build_skill_screen(skill_id)
 

@@ -13,11 +13,23 @@
       "id": "english",
       "name": "Англійська",
       "type": "language",
-      "xp": 8325,
+      "xp": 14999,
       "daily_done": true,
       "tasks": [
         {
-          "id": "0caee920-ca48-46a3-8c27-b5af71b416e7",
+          "id": "a774128e-72e3-49da-88f3-8de4bdda59b3",
+          "name": "Shadowing 10 хв",
+          "category": "short",
+          "xp_reward": 6012,
+          "money_usdt": 0.0,
+          "money_uah": 0.0,
+          "target_value": 10.0,
+          "current_value": 0.0,
+          "time_spent": 0,
+          "completed": true
+        },
+        {
+          "id": "487a522f-c995-4de4-b049-48c2e3f6ba52",
           "name": "Shadowing 10 хв",
           "category": "short",
           "xp_reward": 60,
@@ -27,83 +39,11 @@
           "current_value": 0.0,
           "time_spent": 0,
           "completed": true
-        },
-        {
-          "id": "a4dc4944-52f9-4fa1-acd8-46e3f026d079",
-          "name": "20 нових/повторити слова",
-          "category": "short",
-          "xp_reward": 50,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
-          "target_value": 20.0,
-          "current_value": 0.0,
-          "time_spent": 0,
-          "completed": true
-        },
-        {
-          "id": "04b12353-e9f3-4a49-9c2b-5801e5b75a48",
-          "name": "Абзац щоденника англійською",
-          "category": "short",
-          "xp_reward": 40,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
-          "target_value": 1.0,
-          "current_value": 0.0,
-          "time_spent": 0,
-          "completed": true
-        },
-        {
-          "id": "3bdd008a-7396-4fdb-8705-128dcccbad7c",
-          "name": "Абзац щоденника англійською",
-          "category": "short",
-          "xp_reward": 40,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
-          "target_value": 1.0,
-          "current_value": 0.0,
-          "time_spent": 0,
-          "completed": true
-        },
-        {
-          "id": "4c736090-57dc-42b9-9f68-efec54a2d79e",
-          "name": "20 нових/повторити слова",
-          "category": "short",
-          "xp_reward": 50,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
-          "target_value": 20.0,
-          "current_value": 0.0,
-          "time_spent": 0,
-          "completed": true
-        },
-        {
-          "id": "ff01d61a-e6d4-4668-9972-3f709aad9724",
-          "name": "20 нових/повторити слова",
-          "category": "short",
-          "xp_reward": 50,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
-          "target_value": 20.0,
-          "current_value": 0.0,
-          "time_spent": 0,
-          "completed": true
-        },
-        {
-          "id": "2924397b-163e-4035-9d1f-6096f56305db",
-          "name": "Абзац щоденника англійською",
-          "category": "short",
-          "xp_reward": 40,
-          "money_usdt": 0.0,
-          "money_uah": 0.0,
-          "target_value": 1.0,
-          "current_value": 0.0,
-          "time_spent": 0,
-          "completed": true
         }
       ],
       "cefr": "A0",
       "current_streak": 1,
-      "last_completed_date": "2025-11-20"
+      "last_completed_date": "2025-11-23"
     },
     {
       "id": "french",
@@ -152,5 +92,5 @@
     }
   ],
   "global_tasks": [],
-  "last_daily_reset": "2025-11-20"
+  "last_daily_reset": "2025-11-23"
 }
