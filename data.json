@@ -2,8 +2,7 @@
   "hero": {
     "name": "Pasha",
     "xp_total": 0,
-    "money_usdt": 0.0,
-    "money_uah": 0.0,
+    "reward_points": 50,
     "hp_current": 100,
     "hp_max": 100,
     "avatar_path": "avatar.jpg"
@@ -13,7 +12,7 @@
       "id": "english",
       "name": "Англійська",
       "type": "language",
-      "xp": 15049,
+      "xp": 15099,
       "daily_done": true,
       "tasks": [
         {
@@ -50,12 +49,25 @@
           "target_value": 20.0,
           "current_value": 0.0,
           "time_spent": 0,
-          "completed": true
+          "completed": true,
+          "completed_date": "2025-11-26"
+        },
+        {
+          "id": "323aec6f-4427-48cb-973e-64d8b2565c0c",
+          "name": "20 нових/повторити слова",
+          "category": "short",
+          "xp_reward": 50,
+          "rp_base_value": 50,
+          "difficulty": "normal",
+          "target_value": 20.0,
+          "current_value": 0.0,
+          "time_spent": 0,
+          "completed": false
         }
       ],
       "cefr": "A0",
-      "current_streak": 2,
-      "last_completed_date": "2025-11-24"
+      "current_streak": 1,
+      "last_completed_date": "2025-11-26"
     },
     {
       "id": "french",
@@ -104,5 +116,14 @@
     }
   ],
   "global_tasks": [],
-  "last_daily_reset": "2025-11-24"
+  "last_daily_reset": "2025-11-26",
+  "task_history": [
+    {
+      "task_name": "Урок англійської 20 хв",
+      "skill_name": "Англійська",
+      "xp_gained": 50,
+      "rp_gained": 50,
+      "date": "2025-11-26"
+    }
+  ]
 }

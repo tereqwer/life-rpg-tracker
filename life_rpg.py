@@ -11,6 +11,25 @@ import tkinter.font as tkfont
 import uuid
 import pyperclip
 
+RP_CONSTANTS = {
+    "BASE_XP_PER_HOUR": 20,           # База: 1 година праці ≈ 20 RP
+    "PENALTY_FAILED_BOSS": -50,       # Штраф за провалений Boss
+    "MULTIPLIERS": {                  # Коефіцієнти складності
+        "easy": 0.8,
+        "normal": 1.0,
+        "hard": 1.5,
+    }
+}
+
+# --- МАГАЗИН (LOOT SHOP) ---
+LOOT_SHOP = [
+    {"name": "Пограти в ігри 2 години", "cost": 50, "category": "Time"},
+    {"name": "Нова кофта", "cost": 500, "category": "Material"},
+    {"name": "Спортівки", "cost": 800, "category": "Material"},
+    {"name": "Телефон", "cost": 20000, "category": "Hardware"},
+    # Додайте інші ваші бажання
+]
+
 TASK_TEMPLATES = {
     "language": [
         {
@@ -198,8 +217,7 @@ def create_default_data() -> dict:
         "hero": {
             "name": "Pasha",
             "xp_total": 0,         # можна потім не зберігати
-            "money_usdt": 1350.0,     # баланс у USDT
-            "money_uah": 11590.0,       # баланс у hrn
+            "reward_points": 0,      
             "hp_current": 100,     # поточне HP
             "hp_max": 100,         # максимум HP
             "avatar_path": "avatar.jpg"      # шлях до картинки героя (png/jpg)
@@ -274,6 +292,130 @@ class App:
         self.ensure_daily_reset()
         # Побудова головного екрану
         self.build_main_screen()
+        
+    def purchase_item(self, item_cost: int, item_name: str):
+        """Перевіряє RP баланс та виконує покупку винагороди."""
+        hero = self.data.get("hero", {})
+        current_rp = hero.get("reward_points", 0)
+
+        if current_rp < item_cost:
+            messagebox.showerror("Помилка", f"Недостатньо RP! Потрібно {item_cost} RP, а у вас є лише {current_rp} RP.")
+            return
+
+        confirm = messagebox.askyesno(
+            "Підтвердження покупки",
+            f"Ви впевнені, що хочете купити '{item_name}' за {item_cost} RP?"
+        )
+        if not confirm:
+            return
+
+        # Виконання покупки
+        hero["reward_points"] = current_rp - item_cost
+        
+        # Додатково: збереження транзакції в історії (якщо є history log)
+        
+        save_data(self.data)
+        
+        messagebox.showinfo("Куплено!", f"Вітаємо! Ви придбали '{item_name}'. Баланс: {hero['reward_points']} RP.")
+        
+        # Оновлюємо екрани
+        self.build_main_screen()
+        self.open_loot_shop() # Оновлюємо сам магазин
+        
+    def open_loot_shop(self):
+        """Екран Магазину Винагород (Loot Shop)."""
+        # Очистка вікна
+        for w in self.root.winfo_children():
+            w.destroy()
+
+        main_frame = ctk.CTkFrame(self.root, corner_radius=0)
+        main_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Верхній рядок: Назад + Баланс
+        top_row = ctk.CTkFrame(main_frame, fg_color="transparent")
+        top_row.pack(fill="x", pady=(0, 10))
+
+        ctk.CTkButton(
+            top_row,
+            text="← Назад",
+            width=90,
+            command=self.build_main_screen
+        ).pack(side="left")
+
+        # Баланс
+        hero = self.data.get("hero", {})
+        current_rp = hero.get("reward_points", 0)
+        
+        ctk.CTkLabel(
+            top_row,
+            text=f"🛒 Магазин | Ваш Баланс: {int(current_rp)} RP",
+            font=("Segoe UI", 18, "bold"),
+            text_color="#f97316"
+        ).pack(side="left", padx=20)
+        
+        # Скрольований фрейм для товарів
+        shop_scroll = ctk.CTkScrollableFrame(main_frame, label_text="Доступні Нагороди")
+        shop_scroll.pack(fill="both", expand=True, padx=5, pady=5)
+        
+        # -----------------------------
+        # Відображення Товарів
+        # -----------------------------
+        for item in LOOT_SHOP:
+            self._create_shop_item_card(shop_scroll, item, current_rp)
+            
+    
+    def _create_shop_item_card(self, parent, item: dict, current_rp: int):
+        """Створює картку одного товару в магазині."""
+        item_name = item["name"]
+        item_cost = item["cost"]
+        item_desc = item.get("description", "Нагорода за важку працю.")
+        
+        can_buy = current_rp >= item_cost
+        
+        card = ctk.CTkFrame(parent, corner_radius=8, fg_color="#101624")
+        card.pack(fill="x", padx=10, pady=6)
+        
+        # Ліва частина: Назва та Опис
+        left = ctk.CTkFrame(card, fg_color="transparent")
+        left.pack(side="left", fill="x", expand=True, padx=10, pady=8)
+        
+        ctk.CTkLabel(
+            left,
+            text=f"{item_name} ({item.get('category', 'Загальне')})",
+            font=("Segoe UI", 14, "bold"),
+            text_color="#e5e7eb"
+        ).pack(anchor="w")
+
+        ctk.CTkLabel(
+            left,
+            text=item_desc,
+            font=("Segoe UI", 10),
+            text_color="#9ca3af"
+        ).pack(anchor="w", pady=(2, 0))
+
+        # Права частина: Ціна та Кнопка
+        right = ctk.CTkFrame(card, fg_color="transparent")
+        right.pack(side="right", padx=10)
+        
+        ctk.CTkLabel(
+            right,
+            text=f"Ціна: {item_cost} RP",
+            font=("Segoe UI", 16, "bold"),
+            text_color="#f97316" if can_buy else "#ef4444" # Червоний, якщо не вистачає
+        ).pack(pady=(0, 5))
+        
+        btn_buy = ctk.CTkButton(
+            right,
+            text="Купити",
+            width=90,
+            fg_color="#22c55e",
+            command=lambda cost=item_cost, name=item_name: self.purchase_item(cost, name)
+        )
+        
+        if not can_buy:
+            btn_buy.configure(state="disabled", text="Не вистачає")
+
+        btn_buy.pack()
 
     def show_xp_gain_animation(self, skill_id: str, skill: dict, xp_gained: int, old_xp: float, new_xp: float, old_lvl: int, new_lvl: int):
         """Плаваючий попап з анімацією XP та мотиваційним повідомленням."""
@@ -793,8 +935,6 @@ class App:
 
         name = task.get("name", "Без назви")
         xp_reward = task.get("xp_reward", 0)
-        money_usdt = task.get("money_usdt", 0)
-        money_uah = task.get("money_uah", 0)
         completed = bool(task.get("completed", False))
 
         # Ліва частина
@@ -813,7 +953,7 @@ class App:
 
         ctk.CTkLabel(
             left,
-            text=f"[{skill_name}]  +{xp_reward} XP  |  +{money_usdt} USDT  |  +{money_uah} UAH",
+            text=f"[{skill_name}]  +{xp_reward} XP",
             font=("Segoe UI", 11),
             text_color=reward_color
         ).pack(anchor="w", pady=(2, 0))
@@ -926,7 +1066,6 @@ class App:
 
     def build_main_screen(self):
         """Головний екран: зліва навички, справа герой (CustomTkinter)."""
-
         # очистка
         for w in self.root.winfo_children():
             w.destroy()
@@ -947,13 +1086,24 @@ class App:
         hero_name = hero.get("name", "Hero")
         total_xp = self.get_total_xp()
         total_lvl = self.get_total_level()
-        money_usdt = hero.get("money_usdt", 0.0)
-        money_uah = hero.get("money_uah", 0.0)
+        reward_points = hero.get("reward_points", 0)
         hp_current = hero.get("hp_current", 100)
         hp_max = hero.get("hp_max", 100)
 
         title_lbl = ctk.CTkLabel(right_frame, text="Герой", font=("Segoe UI", 18, "bold"))
         title_lbl.pack(pady=(10, 5))
+        
+        # -----------------------------
+            # ДОДАНО: КНОПКА МАГАЗИНУ
+            # -----------------------------
+        ctk.CTkButton(
+            right_frame,
+            text="🛒 Магазин Винагород", # Додамо емодзі для стилю
+            width=140,
+            fg_color="#f97316", # Колір RP
+            command=self.open_loot_shop 
+        ).pack(pady=(5, 15))
+            # -----------------------------
 
         # аватар
         avatar_path = hero.get("avatar_path") or ""
@@ -986,26 +1136,16 @@ class App:
             font=("Segoe UI", 12)
         ).pack(anchor="w", padx=10, pady=(5, 0))
 
-        self.money_usdt_var = ctk.StringVar(value=f"{money_usdt:.2f}")
-        self.money_uah_var = ctk.StringVar(value=f"{money_uah:.2f}")
-
         money_frame = ctk.CTkFrame(right_frame, fg_color="transparent")
         money_frame.pack(anchor="w", padx=10, pady=(5, 5))
 
-        ctk.CTkLabel(money_frame, text="USDT:", font=("Segoe UI", 11)).grid(row=0, column=0, sticky="w")
-        entry_usdt = ctk.CTkEntry(money_frame, width=90, textvariable=self.money_usdt_var)
-        entry_usdt.grid(row=0, column=1, padx=(4, 10), pady=(0, 2))
-
-        ctk.CTkLabel(money_frame, text="UAH:", font=("Segoe UI", 11)).grid(row=1, column=0, sticky="w")
-        entry_uah = ctk.CTkEntry(money_frame, width=90, textvariable=self.money_uah_var)
-        entry_uah.grid(row=1, column=1, padx=(4, 10), pady=(0, 2))
-
-        ctk.CTkButton(
+        ctk.CTkLabel(
             right_frame,
-            text="Оновити баланс",
-            width=140,
-            command=self.update_money_from_inputs
-        ).pack(anchor="w", padx=10, pady=(0, 12))
+            text=f"RP Баланс: {int(reward_points)}",
+            font=("Segoe UI", 14, "bold"),
+            text_color="#f97316" # Помаранчевий
+        ).pack(anchor="w", padx=10, pady=(5, 15))
+
 
         ctk.CTkButton(
             right_frame,
@@ -1026,6 +1166,8 @@ class App:
             width=140,
             command=self.build_quests_screen
         ).pack(pady=(0, 10))
+        
+
 
         # ---------- ЛІВО: СПИСОК НАВИЧОК ----------
         ctk.CTkLabel(
@@ -1085,18 +1227,6 @@ class App:
         entry_xp.grid(row=2, column=1, sticky="w", padx=(8, 0), pady=(0, 6))
         entry_xp.insert(0, str(task.get("xp_reward", 0)))
 
-        # ---- USDT ----
-        ctk.CTkLabel(frame, text="USDT нагорода:").grid(row=3, column=0, sticky="w")
-        entry_usdt = ctk.CTkEntry(frame, width=80)
-        entry_usdt.grid(row=3, column=1, sticky="w", padx=(8, 0), pady=(0, 6))
-        entry_usdt.insert(0, str(task.get("money_usdt", 0.0)))
-
-        # ---- UAH ----
-        ctk.CTkLabel(frame, text="UAH нагорода:").grid(row=4, column=0, sticky="w")
-        entry_uah = ctk.CTkEntry(frame, width=80)
-        entry_uah.grid(row=4, column=1, sticky="w", padx=(8, 0), pady=(0, 6))
-        entry_uah.insert(0, str(task.get("money_uah", 0.0)))
-
         # ---- ЦІЛЬ ----
         ctk.CTkLabel(frame, text="Ціль (всього):").grid(row=5, column=0, sticky="w")
         entry_target = ctk.CTkEntry(frame, width=80)
@@ -1129,6 +1259,7 @@ class App:
                 font=("Segoe UI", 10),
                 text_color="#9ca3af"
             ).grid(row=8, column=0, columnspan=2, pady=(0, 6))
+            
 
         def on_save():
             name = entry_name.get().strip()
@@ -1143,16 +1274,6 @@ class App:
                 messagebox.showerror("Помилка", "XP має бути числом")
                 return
 
-            # Гроші
-            try:
-                usdt_val = float(entry_usdt.get())
-            except ValueError:
-                usdt_val = 0.0
-
-            try:
-                uah_val = float(entry_uah.get())
-            except ValueError:
-                uah_val = 0.0
 
             # Ціль / поточне
             try:
@@ -1183,8 +1304,6 @@ class App:
             task["name"] = name
             task["category"] = cat_var.get()
             task["xp_reward"] = xp_val
-            task["money_usdt"] = usdt_val
-            task["money_uah"] = uah_val
             task["target_value"] = target_val
             task["current_value"] = current_val
 
@@ -1442,8 +1561,6 @@ class App:
 
         name = task.get("name", "Без назви")
         xp_reward = task.get("xp_reward", 0)
-        money_usdt = task.get("money_usdt", 0)
-        money_uah = task.get("money_uah", 0)
         completed = task.get("completed", False)
 
         # ліва частина — текст
@@ -1470,7 +1587,7 @@ class App:
 
         lbl_rewards = ctk.CTkLabel(
             left,
-            text=f"+{xp_reward} XP  |  +{money_usdt} USDT  |  +{money_uah} UAH",
+            text=f"+{xp_reward} XP",
             font=("Segoe UI", 10),
             text_color=reward_color
         )
@@ -1593,32 +1710,41 @@ class App:
 
 
     def execute_task(self, skill_id: str, task_id: str):
-        """Виконати задачу — додати XP, гроші, позначити completed."""
-
-        # ДОДАНО: СЬОГОДНІШНЯ ДАТА (ДЛЯ STREAK)
-        # -----------------------------
+        """Виконати задачу — додати XP, RP, позначити completed."""
+        
+        # --- Ініціалізація Дати ---
         today = datetime.date.today()
         today_str = today.isoformat() # Формат YYYY-MM-DD
-        # -----------------------------
-
-        # знаходимо навичку
-        skill = next((s for s in self.data.get("skills", []) if s["id"] == skill_id), None)
+        
+        # --- Знаходження Skill та Task ---
+        skill = next((s for s in self.data.get("skills", []) if s.get("id") == skill_id), None)
         if not skill:
             return
 
-        # знаходимо задачу
-        task = next((t for t in skill.get("tasks", []) if t["id"] == task_id), None)
+        task = next((t for t in skill.get("tasks", []) if t.get("id") == task_id), None)
         if not task:
             return
-
-        # якщо вже виконана — ігноруємо
+            
+        # --- Якщо вже виконана — ігноруємо ---
         if task.get("completed"):
             return
 
+        # ---------------------------------------------
+        # ЛОГІКА РОЗРАХУНКУ XP та RP (ТУТ task ІСНУЄ!)
+        # ---------------------------------------------
+        
         xp_reward = task.get("xp_reward", 0)
-        money_usdt = task.get("money_usdt", 0.0)
-        money_uah = task.get("money_uah", 0.0)
-
+        
+        # 1. РОЗРАХУНОК RP: Використовуємо нові поля
+        difficulty = task.get("difficulty", "normal") 
+        multiplier = RP_CONSTANTS["MULTIPLIERS"].get(difficulty, 1.0)
+        
+        # task.get("rp_base_value", ...) – використовуємо нове поле
+        # Якщо поля rp_base_value немає (стара задача), беремо 0 або xp_reward як запасний варіант.
+        base_rp = task.get("rp_base_value", task.get("xp_reward", 0)) 
+        
+        final_rp_reward = int(base_rp * multiplier) # Нараховуємо RP з множником
+        
         # -----------------------------
         # XP + LEVEL UP LOGIC
         # -----------------------------
@@ -1630,30 +1756,28 @@ class App:
 
         new_lvl = xp_to_level(new_xp)
 
-        # Якщо отримали новий рівень → викликаємо анімацію/звук/попап
         if new_lvl > old_lvl:
             self.on_level_up(skill, old_lvl, new_lvl)
 
         # -----------------------------
-        # Гроші
+        # НАРАХУВАННЯ RP (заміна грошей)
         # -----------------------------
         hero = self.data.get("hero", {})
-        hero["money_usdt"] = hero.get("money_usdt", 0.0) + money_usdt
-        hero["money_uah"] = hero.get("money_uah", 0.0) + money_uah
-
+        hero["reward_points"] = hero.get("reward_points", 0) + final_rp_reward
+    
         # -----------------------------
         # Позначаємо задачу як виконану
         # -----------------------------
         task["completed"] = True
+        task["completed_date"] = today_str # Додаємо дату виконання
         skill["daily_done"] = True
 
         # -----------------------------
-        # ЛОГІКА РОЗРАХУНКУ STREAK
+        # ЛОГІКА РОЗРАХУНКУ STREAK (без змін)
         # -----------------------------
         last_date_str = skill.get("last_completed_date")
         current_streak = skill.get("current_streak", 0)
 
-        # 1. Якщо це перше виконання
         if not last_date_str:
             skill["current_streak"] = 1
         else:
@@ -1661,21 +1785,14 @@ class App:
             delta = today - last_date
 
             if delta.days == 1:
-                # 2. Якщо виконання було вчора - збільшуємо лічильник
                 skill["current_streak"] = current_streak + 1
             elif delta.days > 1:
-                # 3. Якщо перерва більше доби - скидаємо
-                skill["current_streak"] = 1 # Або 0, якщо не виконано сьогодні
-            # Якщо delta.days == 0 (виконано сьогодні раніше) - лічильник не змінюється
+                skill["current_streak"] = 1
 
-        # Оновлюємо дату останнього виконання
         skill["last_completed_date"] = today_str
-        # -----------------------------
-        
-        # ... (Після нарахування XP, грошей, та task["completed"] = True) ...
         
         # -----------------------------
-        # ДОДАНО: ЗБЕРЕЖЕННЯ ІСТОРІЇ ВИКОНАННЯ
+        # ЗБЕРЕЖЕННЯ ІСТОРІЇ ВИКОНАННЯ
         # -----------------------------
         if "task_history" not in self.data:
             self.data["task_history"] = []
@@ -1684,17 +1801,14 @@ class App:
             "task_name": task.get("name"),
             "skill_name": skill.get("name"),
             "xp_gained": xp_reward,
-            "date": datetime.date.today().isoformat(),
-            # Додайте будь-які інші поля, які ви хочете зберегти назавжди (час, гроші тощо)
+            "rp_gained": final_rp_reward, # ДОДАНО RP в історію
+            "date": today_str,
         }
 
         self.data["task_history"].append(completion_record)
-        # -----------------------------
-
+        
         save_data(self.data)
-        # ...
 
-        # ДОДАЄМО ВИКЛИК НОВОЇ ФУНКЦІЇ АНІМАЦІЇ ПЕРЕД ПЕРЕБУДОВОЮ ЕКРАНУ
         self.show_xp_gain_animation(skill_id, skill, xp_reward, old_xp, new_xp, old_lvl, new_lvl)
 
     def open_add_skill_dialog(self):
@@ -1769,60 +1883,17 @@ class App:
             messagebox.showerror("Помилка", "Скіл не знайдено")
             return
 
+        # Для нової задачі поле "task" не існує, тому створюємо заглушку для .get()
+        task = {} 
+        
         win = ctk.CTkToplevel(self.root)
         win.title("Нова задача")
         win.grab_set()
 
         frame = ctk.CTkFrame(win, corner_radius=10)
         frame.pack(fill="both", expand=True, padx=12, pady=12)
-
-        # ---- Назва ----
-        ctk.CTkLabel(frame, text="Назва задачі:").grid(row=1, column=0, sticky="w", pady=(0, 6))
-        entry_name = ctk.CTkEntry(frame, width=220)
-        entry_name.grid(row=1, column=1, sticky="w", pady=(0, 6))
-
-        # ---- Категорія ----
-        ctk.CTkLabel(frame, text="Категорія:").grid(row=2, column=0, sticky="w", pady=(0, 6))
-        cat_var = ctk.StringVar(value="short")
-        combo_cat = ctk.CTkComboBox(
-            frame,
-            values=["short", "medium", "long", "boss"],
-            variable=cat_var,
-            width=120
-        )
-        combo_cat.grid(row=2, column=1, sticky="w", pady=(0, 6))
-
-        # ---- XP ----
-        ctk.CTkLabel(frame, text="XP нагорода:").grid(row=3, column=0, sticky="w", pady=(0, 6))
-        entry_xp = ctk.CTkEntry(frame, width=80)
-        entry_xp.insert(0, "50")
-        entry_xp.grid(row=3, column=1, sticky="w", pady=(0, 6))
-
-        # ---- USDT ----
-        ctk.CTkLabel(frame, text="USDT нагорода:").grid(row=4, column=0, sticky="w", pady=(0, 6))
-        entry_usdt = ctk.CTkEntry(frame, width=80)
-        entry_usdt.insert(0, "0")
-        entry_usdt.grid(row=4, column=1, sticky="w", pady=(0, 6))
-
-        # ---- UAH ----
-        ctk.CTkLabel(frame, text="UAH нагорода:").grid(row=5, column=0, sticky="w", pady=(0, 6))
-        entry_uah = ctk.CTkEntry(frame, width=80)
-        entry_uah.insert(0, "0")
-        entry_uah.grid(row=5, column=1, sticky="w", pady=(0, 6))
-
-        # ---- Ціль ----
-        ctk.CTkLabel(frame, text="Ціль (всього):").grid(row=6, column=0, sticky="w", pady=(0, 6))
-        entry_target = ctk.CTkEntry(frame, width=80)
-        entry_target.insert(0, "0")
-        entry_target.grid(row=6, column=1, sticky="w", pady=(0, 6))
-
-        # ---- Зараз зроблено ----
-        ctk.CTkLabel(frame, text="Зараз зроблено:").grid(row=7, column=0, sticky="w", pady=(0, 10))
-        entry_current = ctk.CTkEntry(frame, width=80)
-        entry_current.insert(0, "0")
-        entry_current.grid(row=7, column=1, sticky="w", pady=(0, 10))
-
-        # ---- ШАБЛОН (ставимо зверху, але створюємо після полів) ----
+        
+        # РЯДОК 0: ШАБЛОН (зверху)
         skill_type = skill.get("type", "default")
         templates = TASK_TEMPLATES.get(skill_type, TASK_TEMPLATES["default"])
         template_labels = ["— без шаблону —"] + [t["label"] for t in templates]
@@ -1833,6 +1904,64 @@ class App:
             frame,
             values=template_labels,
             variable=template_var,
+            # Виклик command має бути визначений нижче, після створення entry_name/entry_xp
+        )
+        combo_template.grid(row=0, column=1, sticky="w", pady=(0, 6))
+
+        # РЯДОК 1: Назва
+        ctk.CTkLabel(frame, text="Назва задачі:").grid(row=1, column=0, sticky="w", pady=(0, 6))
+        entry_name = ctk.CTkEntry(frame, width=220)
+        entry_name.grid(row=1, column=1, sticky="w", pady=(0, 6))
+
+        # РЯДОК 2: Категорія
+        ctk.CTkLabel(frame, text="Категорія:").grid(row=2, column=0, sticky="w", pady=(0, 6))
+        cat_var = ctk.StringVar(value="short")
+        combo_cat = ctk.CTkComboBox(
+            frame,
+            values=["short", "medium", "long", "boss"],
+            variable=cat_var,
+            width=120
+        )
+        combo_cat.grid(row=2, column=1, sticky="w", pady=(0, 6))
+
+        # РЯДОК 3: XP нагорода (Лишаємо для XP рівня)
+        ctk.CTkLabel(frame, text="XP нагорода:").grid(row=3, column=0, sticky="w", pady=(0, 6))
+        entry_xp = ctk.CTkEntry(frame, width=80)
+        entry_xp.insert(0, "50")
+        entry_xp.grid(row=3, column=1, sticky="w", pady=(0, 6))
+
+        # РЯДОК 4: Базова RP (Нове поле)
+        ctk.CTkLabel(frame, text="Базова RP (ціна):").grid(row=4, column=0, sticky="w", pady=(0, 6))
+        entry_rp_base = ctk.CTkEntry(frame, width=80)
+        entry_rp_base.insert(0, "50")
+        entry_rp_base.grid(row=4, column=1, sticky="w", padx=(8, 0), pady=(0, 6))
+
+        # РЯДОК 5: Множник Складності
+        ctk.CTkLabel(frame, text="Складність (x):").grid(row=5, column=0, sticky="w", pady=(0, 6))
+        difficulty_var = ctk.StringVar(value="normal")
+        combo_difficulty = ctk.CTkComboBox(
+            frame,
+            variable=difficulty_var,
+            values=["easy", "normal", "hard"],
+            width=120
+        )
+        combo_difficulty.grid(row=5, column=1, sticky="w", padx=(8, 0), pady=(0, 6))
+
+        # РЯДОК 6: Ціль
+        ctk.CTkLabel(frame, text="Ціль (всього):").grid(row=6, column=0, sticky="w", pady=(0, 6))
+        entry_target = ctk.CTkEntry(frame, width=80)
+        entry_target.insert(0, "0")
+        entry_target.grid(row=6, column=1, sticky="w", pady=(0, 6))
+
+        # РЯДОК 7: Зараз зроблено
+        ctk.CTkLabel(frame, text="Зараз зроблено:").grid(row=7, column=0, sticky="w", pady=(0, 10))
+        entry_current = ctk.CTkEntry(frame, width=80)
+        entry_current.insert(0, "0")
+        entry_current.grid(row=7, column=1, sticky="w", pady=(0, 10))
+
+        # ----- Логіка Шаблонів (Виклик) -----
+        # Тепер, коли всі поля визначені, налаштовуємо команду combo_template:
+        combo_template.configure(
             command=lambda choice: self.apply_task_template(
                 choice,
                 templates,
@@ -1842,75 +1971,77 @@ class App:
                 entry_target
             )
         )
-        combo_template.grid(row=0, column=1, sticky="w", pady=(0, 6))
-
-        # ---- Кнопка збереження ----
+        
+        # РЯДОК 8: КНОПКА ЗБЕРЕЖЕННЯ (потрібно додати тут, як ви робили в on_save)
+        # Оскільки ви не надали on_save, я використаю заглушку, що викличе on_save
+        # з open_edit_task_dialog для тестування:
+        # -----------------------------
+        
         def on_save():
+            # Тут має бути ваша функція on_save, яка зчитує всі 
+            # entry_xp, entry_rp_base, difficulty_var тощо.
+            # Оскільки ми створюємо нову задачу, нам потрібна повна логіка on_save
+            # з open_add_task_dialog.
+            
+            # --- ВИПРАВЛЕНА ЛОГІКА ЗБЕРЕЖЕННЯ (аналог з open_add_task_dialog) ---
+            
             name = entry_name.get().strip()
             if not name:
-                messagebox.showerror("Помилка", "Введи назву задачі")
+                 messagebox.showerror("Помилка", "Назва задачі не може бути порожньою")
+                 return
+            
+            # Валідація XP
+            try:
+                xp_val = int(entry_xp.get())
+            except ValueError:
+                messagebox.showerror("Помилка", "XP має бути цілим числом")
                 return
 
-            category = cat_var.get()
+            # Валідація RP BASE
             try:
-                xp_reward = int(entry_xp.get())
+                rp_base_val = int(entry_rp_base.get())
             except ValueError:
-                xp_reward = 0
+                messagebox.showerror("Помилка", "Базова RP має бути цілим числом")
+                return
+            
+            # Валідація інших полів
+            try:
+                 target_val = float(entry_target.get())
+            except ValueError:
+                 target_val = 0.0
 
             try:
-                money_usdt = float(entry_usdt.get())
+                 current_val = float(entry_current.get())
             except ValueError:
-                money_usdt = 0.0
+                 current_val = 0.0
 
-            try:
-                money_uah = float(entry_uah.get())
-            except ValueError:
-                money_uah = 0.0
-
-            try:
-                target_val = float(entry_target.get())
-            except ValueError:
-                target_val = 0.0
-
-            try:
-                current_val = float(entry_current.get())
-            except ValueError:
-                current_val = 0.0
-
-            task_id = str(uuid.uuid4())
+            # Збирання даних
+            task_id = str(uuid.uuid4()) # Потрібен import uuid
             task = {
                 "id": task_id,
                 "name": name,
-                "category": category,
-                "xp_reward": xp_reward,
-                "money_usdt": money_usdt,
-                "money_uah": money_uah,
+                "category": cat_var.get(),
+                "xp_reward": xp_val,
+                "rp_base_value": rp_base_val,   # НОВЕ ПОЛЕ
+                "difficulty": difficulty_var.get(), # НОВЕ ПОЛЕ
                 "target_value": target_val,
                 "current_value": current_val,
                 "time_spent": 0,
                 "completed": False
             }
-
-            # якщо раптом масиву tasks ще немає — створюємо
-            if "tasks" not in skill:
-                skill["tasks"] = []
-            skill["tasks"].append(task)
-
-            # тихо зберігаємо у data.json, без попапів
-            try:
-                save_data(self.data)   # глобальна функція з твого файлу
-            except NameError:
-                # якщо раптом переіменуєш — просто не впаде
-                pass
-
+            
+            skill.setdefault("tasks", []).append(task)
+            save_data(self.data)
+            
             win.destroy()
-            self.open_skill(skill_id)
-
-
-
+            self.build_skill_screen(skill_id)
+            # --- КІНЕЦЬ ЛОГІКИ ЗБЕРЕЖЕННЯ ---
+            
         btn_save = ctk.CTkButton(frame, text="Зберегти", command=on_save)
-        btn_save.grid(row=8, column=0, columnspan=2, pady=(4, 0))
+        btn_save.grid(row=8, column=0, columnspan=2, pady=(10, 0))
 
+        for i in range(2):
+            frame.grid_columnconfigure(i, weight=1)
 
     def _create_skill_card(self, parent, skill: dict):
         """Одна картка навички в списку (CustomTkinter)."""
@@ -2016,24 +2147,6 @@ class App:
         """Обробка натискання кнопки збереження."""
         save_data(self.data)
         messagebox.showinfo("Збережено", "Стан успішно збережено у data.json")
-
-    def update_money_from_inputs(self):
-        """Бере значення з полів вводу і зберігає в hero.money_*."""
-        hero = self.data.get("hero", {})
-
-        try:
-            hero["money_usdt"] = float(self.money_usdt_var.get())
-        except Exception:
-            hero["money_usdt"] = hero.get("money_usdt", 0.0)
-
-        try:
-            hero["money_uah"] = float(self.money_uah_var.get())
-        except Exception:
-            hero["money_uah"] = hero.get("money_uah", 0.0)
-
-        save_data(self.data)
-        # перезбираємо головний екран, щоб все оновилось
-        self.build_main_screen()
 
 
     def open_skill(self, skill_id: str):
